@@ -10,10 +10,10 @@ const features = [
 ];
 
 const plans = [
-  { name: "Free", price: 0, agents: 1, convos: 50, cta: "Get Started", href: "/register", highlight: false },
-  { name: "Starter", price: 29, agents: 3, convos: 500, cta: "Start Free Trial", href: "/register?plan=STARTER", highlight: false },
-  { name: "Pro", price: 99, agents: 10, convos: 5000, cta: "Start Free Trial", href: "/register?plan=PRO", highlight: true },
-  { name: "Agency", price: 299, agents: -1, convos: -1, cta: "Contact Sales", href: "/register?plan=AGENCY", highlight: false },
+  { name: "Free",    priceUSD: 0,   pricePHP: 0,     agents: 1,  convos: 50,   cta: "Get Started",    href: "/register",             highlight: false },
+  { name: "Starter", priceUSD: 29,  pricePHP: 1650,  agents: 3,  convos: 500,  cta: "Start Free Trial", href: "/register?plan=STARTER", highlight: false },
+  { name: "Pro",     priceUSD: 99,  pricePHP: 5600,  agents: 10, convos: 5000, cta: "Start Free Trial", href: "/register?plan=PRO",     highlight: true  },
+  { name: "Agency",  priceUSD: 299, pricePHP: 16800, agents: -1, convos: -1,   cta: "Contact Sales",   href: "/register?plan=AGENCY", highlight: false },
 ];
 
 const testimonials = [
@@ -109,7 +109,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-gray-500">Start free. Scale as you grow.</p>
+            <p className="text-gray-500">Start free. Scale as you grow. Pay in USD or Philippine Peso.</p>
           </div>
           <div className="grid md:grid-cols-4 gap-6">
             {plans.map((plan) => (
@@ -121,10 +121,13 @@ export default function HomePage() {
                   <div className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full inline-block mb-3">Most Popular</div>
                 )}
                 <h3 className="font-bold text-gray-900 text-lg">{plan.name}</h3>
-                <div className="my-3">
-                  <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
+                <div className="my-2">
+                  <span className="text-4xl font-bold text-gray-900">${plan.priceUSD}</span>
                   <span className="text-gray-500 text-sm">/mo</span>
                 </div>
+                {plan.pricePHP > 0 && (
+                  <p className="text-sm text-indigo-600 font-medium mb-3">₱{plan.pricePHP.toLocaleString()}/mo</p>
+                )}
                 <ul className="space-y-2 mb-6 text-sm text-gray-600">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
@@ -143,6 +146,9 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <p className="text-center text-sm text-gray-400 mt-8">
+            🇵🇭 Philippine users can pay via <strong>GCash, Maya, cards, and bank transfer</strong> through PayMongo or Xendit.
+          </p>
         </div>
       </section>
 
