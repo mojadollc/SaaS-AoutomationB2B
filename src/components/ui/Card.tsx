@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
-export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
+export function Card({ className, children, onClick }: { className?: string; children: React.ReactNode; onClick?: () => void }) {
   return (
-    <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm", className)}>
+    <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm", className)} onClick={onClick}>
       {children}
     </div>
   );

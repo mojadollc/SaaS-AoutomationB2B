@@ -5,8 +5,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AgentFlow – AI Automation for Business",
+  title: "Aurex – AI Automation for Business",
   description: "Automate customer support, lead follow-ups, and appointment bookings with AI agents.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

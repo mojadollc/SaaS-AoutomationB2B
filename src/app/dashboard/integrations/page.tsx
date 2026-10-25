@@ -11,7 +11,7 @@ const INTEGRATIONS = [
     id: "zapier",
     name: "Zapier",
     logo: "⚡",
-    description: "Connect AgentFlow to 5,000+ apps. Use your API key to trigger agents from any Zap.",
+    description: "Connect Aurex to 5,000+ apps. Use your API key to trigger agents from any Zap.",
     steps: [
       'In Zapier, create a new Zap and choose "Webhooks by Zapier" as the action.',
       "Set method to POST and URL to the endpoint below.",
@@ -25,12 +25,12 @@ const INTEGRATIONS = [
     id: "slack",
     name: "Slack",
     logo: "💬",
-    description: "Add a /agentflow slash command to your Slack workspace.",
+    description: "Add a /Aurex slash command to your Slack workspace.",
     steps: [
       "Go to api.slack.com/apps and create a new app.",
-      "Add a Slash Command: /agentflow pointing to the endpoint below.",
+      "Add a Slash Command: /Aurex pointing to the endpoint below.",
       "Add SLACK_SIGNING_SECRET to your .env from the app credentials.",
-      "Use: /agentflow <agentId> <your message>",
+      "Use: /Aurex <agentId> <your message>",
     ],
     endpoint: `${BASE}/api/integrations/slack`,
     docs: "https://api.slack.com/interactivity/slash-commands",
@@ -72,7 +72,7 @@ const INTEGRATIONS = [
       "Copy your Agent ID from the Agents page.",
       "Add the script tag below to your website's HTML before </body>.",
       "The widget will appear as a chat bubble on your site.",
-      "Conversations appear in your AgentFlow dashboard automatically.",
+      "Conversations appear in your Aurex dashboard automatically.",
     ],
     endpoint: `${BASE}/api/widget`,
     docs: null,
@@ -145,7 +145,7 @@ export default function IntegrationsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Integrations</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Connect AgentFlow to your existing tools and platforms.
+          Connect Aurex to your existing tools and platforms.
         </p>
       </div>
 
@@ -225,7 +225,7 @@ export default function IntegrationsPage() {
           <h2 className="text-lg font-semibold text-gray-900">Outbound Webhooks</h2>
         </div>
         <p className="text-sm text-gray-500 mb-6">
-          AgentFlow will POST to your URL when events happen. Use this to sync with HubSpot, Salesforce, or any custom system.
+          Aurex will POST to your URL when events happen. Use this to sync with HubSpot, Salesforce, or any custom system.
         </p>
 
         <Card className="mb-6">

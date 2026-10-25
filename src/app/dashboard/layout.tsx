@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { Bot, LayoutDashboard, MessageSquare, CreditCard, LogOut, Plug, Key, ShoppingCart, Package, Shield } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Bot, CreditCard, LogOut, Plug, Key, ShoppingCart, Package, Shield, LayoutTemplate } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
   { href: "/dashboard/agents", icon: Bot, label: "Agents" },
   { href: "/dashboard/conversations", icon: MessageSquare, label: "Conversations" },
+  { href: "/dashboard/templates", icon: LayoutTemplate, label: "Templates" },
   { href: "/dashboard/orders", icon: ShoppingCart, label: "Orders" },
   { href: "/dashboard/products", icon: Package, label: "Products" },
   { href: "/dashboard/integrations", icon: Plug, label: "Integrations" },
@@ -25,8 +26,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="px-6 py-5 border-b border-gray-100">
-          <Link href="/" className="flex items-center gap-2 font-bold text-indigo-600">
-            <Bot className="w-5 h-5" /> AgentFlow
+          <Link href="/" className="font-bold text-amber-600">
+            Aurex
           </Link>
         </div>
 
@@ -47,7 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="px-3 py-2 mb-2">
             <p className="text-sm font-medium text-gray-900 truncate">{session.user?.name}</p>
             <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
-            <span className="inline-block mt-1 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
               {(session.user as any)?.plan ?? "FREE"}
             </span>
           </div>

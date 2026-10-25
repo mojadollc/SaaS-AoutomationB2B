@@ -22,8 +22,8 @@ export async function dispatchWebhooks(userId: string, event: WebhookEvent, payl
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-AgentFlow-Signature": `sha256=${sig}`,
-          "X-AgentFlow-Event": event,
+          "X-Aurex-Signature": `sha256=${sig}`,
+          "X-Aurex-Event": event,
         },
         body,
       });

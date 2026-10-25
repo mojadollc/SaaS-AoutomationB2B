@@ -57,7 +57,7 @@ export default function ApiKeysPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">API Keys</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Use these keys to connect external systems to AgentFlow via the inbound webhook or Zapier.
+          Use these keys to connect external systems to Aurex via the inbound webhook or Zapier.
         </p>
       </div>
 

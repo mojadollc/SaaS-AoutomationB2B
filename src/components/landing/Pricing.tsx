@@ -1,48 +1,36 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Zap } from "lucide-react";
+import { Check } from "lucide-react";
 
 const plans = [
   {
-    name: "Free",
+    key: "FREE", name: "Free",
     priceUSD: 0, pricePHP: 0,
-    agents: 1, convos: 50,
+    desc: "Perfect for trying out Aurex.",
     features: ["1 AI Agent", "50 conversations/mo", "Web widget", "Email support"],
-    cta: "Get Started Free",
-    href: "/register",
-    highlight: false,
-    ctaStyle: "bg-gray-900 text-white hover:bg-gray-800",
+    cta: "Get Started Free", href: "/register", highlight: false,
   },
   {
-    name: "Starter",
+    key: "STARTER", name: "Starter",
     priceUSD: 29, pricePHP: 1650,
-    agents: 3, convos: 500,
+    desc: "For small businesses getting started.",
     features: ["3 AI Agents", "500 conversations/mo", "All channels", "Priority support", "Analytics"],
-    cta: "Start Free Trial",
-    href: "/register?plan=STARTER",
-    highlight: false,
-    ctaStyle: "bg-gray-900 text-white hover:bg-gray-800",
+    cta: "Start Free Trial", href: "/register?plan=STARTER", highlight: false,
   },
   {
-    name: "Pro",
+    key: "PRO", name: "Pro",
     priceUSD: 99, pricePHP: 5600,
-    agents: 10, convos: 5000,
-    features: ["10 AI Agents", "5,000 conversations/mo", "All channels", "Custom prompts", "Webhooks", "API access", "Order management"],
-    cta: "Start Free Trial",
-    href: "/register?plan=PRO",
-    highlight: true,
-    ctaStyle: "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-90",
+    desc: "For growing businesses that need more.",
+    features: ["10 AI Agents", "5,000 conversations/mo", "All channels", "Custom prompts", "Webhooks", "API access"],
+    cta: "Start Free Trial", href: "/register?plan=PRO", highlight: true,
   },
   {
-    name: "Agency",
+    key: "AGENCY", name: "Agency",
     priceUSD: 299, pricePHP: 16800,
-    agents: -1, convos: -1,
-    features: ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support", "Custom integrations", "SLA guarantee"],
-    cta: "Contact Sales",
-    href: "/register?plan=AGENCY",
-    highlight: false,
-    ctaStyle: "bg-gray-900 text-white hover:bg-gray-800",
+    desc: "For agencies managing multiple clients.",
+    features: ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support", "Custom integrations"],
+    cta: "Contact Sales", href: "/register?plan=AGENCY", highlight: false,
   },
 ];
 
@@ -50,84 +38,91 @@ export default function Pricing() {
   const [currency, setCurrency] = useState<"USD" | "PHP">("USD");
 
   return (
-    <section id="pricing" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
-            💰 Simple Pricing
-          </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            Start Free,{" "}
-            <span className="gradient-text">Scale as You Grow</span>
-          </h2>
-          <p className="text-xl text-gray-500 mb-8">No hidden fees. Cancel anytime.</p>
+    <section id="pricing" className="py-32 bg-white">
+      <div className="max-w-7xl mx-auto px-8">
 
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div>
+            <p className="text-xs font-semibold text-[#c9a84c] uppercase tracking-[0.3em] mb-4">Pricing</p>
+            <h2 className="text-5xl md:text-6xl font-black text-gray-900 leading-[1] tracking-tighter">
+              Start free.<br />
+              <span className="gradient-text">Scale as you grow.</span>
+            </h2>
+          </div>
           {/* Currency toggle */}
-          <div className="inline-flex bg-gray-100 rounded-xl p-1 gap-1">
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-start md:self-auto">
             {(["USD", "PHP"] as const).map((c) => (
-              <button
-                key={c}
-                onClick={() => setCurrency(c)}
+              <button key={c} onClick={() => setCurrency(c)}
                 className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  currency === c ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
+                  currency === c ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                }`}>
                 {c === "USD" ? "🇺🇸 USD" : "🇵🇭 PHP"}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative rounded-2xl p-7 flex flex-col ${
+            <div key={plan.key}
+              className={`relative rounded-3xl p-8 flex flex-col transition-all duration-300 ${
                 plan.highlight
-                  ? "bg-gradient-to-b from-indigo-600 to-violet-700 text-white shadow-2xl shadow-indigo-200 scale-105"
-                  : "bg-white border-2 border-gray-100 shadow-sm"
-              }`}
-            >
+                  ? "bg-[#0a0a0a] text-white shadow-2xl shadow-black/20 scale-[1.02]"
+                  : "bg-[#faf8f3] border border-[#e8c97a]/20 hover:border-[#c9a84c]/40"
+              }`}>
+
               {plan.highlight && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
-                  <Zap className="w-3 h-3" /> Most Popular
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#0a0a0a] text-xs font-bold px-4 py-1.5 rounded-full">
+                  Most Popular
                 </div>
               )}
 
-              <div className="mb-6">
-                <h3 className={`font-bold text-xl mb-3 ${plan.highlight ? "text-white" : "text-gray-900"}`}>
+              <div className="mb-8">
+                <h3 className={`font-bold text-lg mb-1 ${plan.highlight ? "text-white" : "text-gray-900"}`}>
                   {plan.name}
                 </h3>
+                <p className={`text-xs mb-6 ${plan.highlight ? "text-white/40" : "text-gray-400"}`}>
+                  {plan.desc}
+                </p>
                 <div className="flex items-end gap-1">
-                  <span className={`text-4xl font-black ${plan.highlight ? "text-white" : "text-gray-900"}`}>
+                  <span className={`text-5xl font-black tracking-tighter ${plan.highlight ? "text-white" : "text-gray-900"}`}>
                     {currency === "USD" ? `$${plan.priceUSD}` : `₱${plan.pricePHP.toLocaleString()}`}
                   </span>
-                  <span className={`text-sm mb-1.5 ${plan.highlight ? "text-white/70" : "text-gray-400"}`}>/mo</span>
+                  <span className={`text-sm mb-2 ${plan.highlight ? "text-white/30" : "text-gray-400"}`}>/mo</span>
                 </div>
                 {plan.priceUSD > 0 && (
-                  <p className={`text-xs mt-1 ${plan.highlight ? "text-white/60" : "text-gray-400"}`}>
-                    {currency === "USD" ? `≈ ₱${plan.pricePHP.toLocaleString()} PHP` : `≈ $${plan.priceUSD} USD`}
+                  <p className={`text-xs mt-1 ${plan.highlight ? "text-white/20" : "text-gray-300"}`}>
+                    {currency === "USD" ? `≈ ₱${plan.pricePHP.toLocaleString()}` : `≈ $${plan.priceUSD}`}
                   </p>
                 )}
               </div>
 
-              <ul className="space-y-2.5 mb-8 flex-1">
+              {/* Gold divider */}
+              <div className={`h-px mb-6 ${plan.highlight ? "bg-white/10" : "bg-[#e8c97a]/30"}`} />
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-center gap-2.5">
-                    <CheckCircle className={`w-4 h-4 shrink-0 ${plan.highlight ? "text-white/80" : "text-green-500"}`} />
-                    <span className={`text-sm ${plan.highlight ? "text-white/90" : "text-gray-600"}`}>{f}</span>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                      plan.highlight ? "bg-[#c9a84c]/20" : "bg-[#c9a84c]/10"
+                    }`}>
+                      <Check className="w-2.5 h-2.5 text-[#c9a84c]" />
+                    </div>
+                    <span className={`text-sm ${plan.highlight ? "text-white/70" : "text-gray-600"}`}>{f}</span>
                   </li>
                 ))}
               </ul>
 
-              <Link
-                href={plan.href}
-                className={`w-full text-center font-bold py-3 rounded-xl transition-all text-sm ${
+              <Link href={plan.href}
+                className={`w-full text-center font-bold py-3.5 rounded-xl transition-all text-sm block ${
                   plan.highlight
-                    ? "bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg"
-                    : plan.ctaStyle
-                } block`}
-              >
+                    ? "bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#0a0a0a] hover:opacity-90"
+                    : plan.key === "FREE"
+                    ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    : "bg-[#0a0a0a] text-white hover:bg-gray-800"
+                }`}>
                 {plan.cta}
               </Link>
             </div>
@@ -136,10 +131,10 @@ export default function Pricing() {
 
         {/* Payment methods */}
         <div className="mt-12 text-center">
-          <p className="text-sm text-gray-400 mb-4">🇵🇭 Philippine users — pay via GCash, Maya, cards, and bank transfer</p>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+          <p className="text-xs text-gray-300 mb-4">🇵🇭 Philippine users — pay via GCash, Maya, cards, and bank transfer</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
             {["💳 Visa / Mastercard", "📱 GCash", "🟢 Maya", "🏦 Bank Transfer", "🏪 Over-the-Counter"].map((m) => (
-              <span key={m} className="bg-gray-50 border border-gray-200 px-4 py-2 rounded-full">{m}</span>
+              <span key={m} className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-4 py-2 rounded-full">{m}</span>
             ))}
           </div>
         </div>

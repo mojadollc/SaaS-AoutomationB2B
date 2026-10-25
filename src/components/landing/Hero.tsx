@@ -1,142 +1,218 @@
 import Link from "next/link";
-import { ArrowRight, Zap, Star, TrendingUp, Clock } from "lucide-react";
+import { ArrowRight, Zap, Shield, Users } from "lucide-react";
 
-const stats = [
-  { value: "10,000+", label: "Businesses Automated", icon: TrendingUp },
-  { value: "2M+", label: "Conversations Handled", icon: Zap },
-  { value: "24/7", label: "Always Working", icon: Clock },
-  { value: "4.9★", label: "Average Rating", icon: Star },
+const agents = [
+  { name: "Customer Support", industry: "E-commerce", status: "active", handled: "1,284", icon: "💬" },
+  { name: "Lead Follow-up", industry: "Real Estate", status: "active", handled: "847", icon: "🎯" },
+  { name: "Appointment Booking", industry: "Healthcare", status: "active", handled: "2,103", icon: "📅" },
+  { name: "Report Generator", industry: "Finance", status: "idle", handled: "412", icon: "📊" },
 ];
 
-const chatMessages = [
-  { role: "user", text: "Hi, I'd like to book a table for 4 this Saturday at 7pm" },
-  { role: "bot", text: "Great! I have a table available this Saturday at 7:00 PM for 4 guests. May I have your name?" },
-  { role: "user", text: "Maria Santos" },
-  { role: "bot", text: "Perfect, Maria! Your table is confirmed for Saturday at 7:00 PM 🎉 We'll send a reminder 2 hours before. See you then!" },
+const trust = [
+  { icon: <Zap className="w-3.5 h-3.5" />, label: "0.3s avg response" },
+  { icon: <Shield className="w-3.5 h-3.5" />, label: "99.9% uptime SLA" },
+  { icon: <Users className="w-3.5 h-3.5" />, label: "10K+ businesses" },
 ];
 
 export default function Hero() {
   return (
-    <section className="hero-gradient pt-32 pb-20 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left */}
+    <section
+      className="aurora-bg relative min-h-screen flex flex-col overflow-hidden"
+    >
+      {/* Soft center glow on top of aurora */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 40%, rgba(201,168,76,0.18) 0%, transparent 60%)" }}
+      />
+
+      {/* Edge vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.7) 100%)" }}
+      />
+
+      {/* Noise grain */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ opacity: 0.03, backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }}
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-8 pt-36 pb-28 flex-1 flex flex-col justify-center w-full">
+        <div className="grid lg:grid-cols-[1fr_1.05fr] gap-20 items-center">
+
+          {/* ── LEFT ── */}
           <div>
-            <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full mb-6">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              AI Agents Working Right Now
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2 mb-10 px-3.5 py-1.5 rounded-full" style={{ border: "1px solid rgba(201,168,76,0.25)", background: "rgba(201,168,76,0.05)" }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#c9a84c" }} />
+              <span className="text-xs font-semibold tracking-[0.18em] uppercase" style={{ color: "#c9a84c" }}>AI Automation Platform</span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6 tracking-tight">
+            {/* Headline */}
+            <h1 className="font-black leading-tight tracking-tighter mb-6" style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.8rem)", color: "#fff" }}>
               Your Business,{" "}
-              <span className="gradient-text">Automated</span>
-              <br />
-              While You Sleep
+              <span className="shimmer-text">On Autopilot.</span>
             </h1>
 
-            <p className="text-xl text-gray-500 leading-relaxed mb-8 max-w-lg">
-              Deploy AI agents in minutes that handle customer support, book appointments, take orders, and follow up with leads — across WhatsApp, Messenger, your website, and more.
+            <p className="text-base leading-relaxed mb-10 max-w-[420px] font-light" style={{ color: "rgba(255,255,255,0.42)" }}>
+              Deploy AI agents that handle support, bookings, leads, and reports — across every channel, 24 / 7, without hiring a single extra person.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-10">
-              <Link href="/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold px-7 py-4 rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-indigo-200 text-base">
-                Start Free — No Card Needed <ArrowRight className="w-5 h-5" />
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-4 mb-10">
+              <Link
+                href="/register"
+                className="group inline-flex items-center gap-2.5 font-bold px-6 py-3.5 rounded-xl text-sm transition-opacity hover:opacity-85"
+                style={{ background: "linear-gradient(135deg, #c9a84c, #e8c97a)", color: "#080808" }}
+              >
+                Start Free — No Card Needed
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <a href="#how-it-works" className="inline-flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 font-semibold px-7 py-4 rounded-2xl hover:border-indigo-300 transition-all text-base">
-                See How It Works
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-white"
+                style={{ color: "rgba(255,255,255,0.38)" }}
+              >
+                See how it works
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs" style={{ border: "1px solid rgba(255,255,255,0.14)" }}>↓</span>
               </a>
             </div>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-              <span className="flex items-center gap-1.5">✅ Free plan forever</span>
-              <span className="flex items-center gap-1.5">✅ Setup in 5 minutes</span>
-              <span className="flex items-center gap-1.5">✅ No coding needed</span>
+            {/* Trust bar */}
+            <div className="flex items-center gap-6 flex-wrap">
+              {trust.map((t) => (
+                <div key={t.label} className="flex items-center gap-2" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <span style={{ color: "rgba(201,168,76,0.7)" }}>{t.icon}</span>
+                  <span className="text-xs font-medium">{t.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right — Live chat preview */}
+          {/* ── RIGHT — Dashboard card ── */}
           <div className="relative">
-            {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-violet-400 rounded-3xl blur-3xl opacity-20 scale-95" />
+            {/* Glow behind */}
+            <div
+              className="absolute inset-0 rounded-3xl"
+              style={{ background: "rgba(201,168,76,0.06)", filter: "blur(50px)", transform: "scale(0.92)" }}
+            />
 
-            <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-              {/* Chat header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 flex items-center gap-3">
-                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm">AF</div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Restaurant Booking Agent</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-                    <span className="text-white/70 text-xs">Online · Replies instantly</span>
+            {/* Card */}
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(201,168,76,0.18)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px rgba(0,0,0,0.5)",
+              }}
+            >
+              {/* Titlebar */}
+              <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.02)" }}>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    {["#ff5f57","#febc2e","#28c840"].map((c) => (
+                      <span key={c} className="w-3 h-3 rounded-full" style={{ background: c, opacity: 0.8 }} />
+                    ))}
                   </div>
+                  <span className="text-xs ml-2 font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>Aurex — Active Agents</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>3 running</span>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="p-5 space-y-3 bg-gray-50 min-h-[280px]">
-                {chatMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm shadow-sm"
-                    }`}>
-                      {msg.text}
+              {/* Column headers */}
+              <div className="grid grid-cols-[auto_1fr_auto_auto] gap-4 px-5 py-2.5 text-xs font-semibold tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.18)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <span>Agent</span>
+                <span>Industry</span>
+                <span className="text-right">Handled</span>
+                <span className="text-right">Status</span>
+              </div>
+
+              {/* Agent rows */}
+              <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                {agents.map((a, i) => (
+                  <div
+                    key={a.name}
+                    className="grid grid-cols-[auto_1fr_auto_auto] gap-4 items-center px-5 py-4 transition-colors"
+                    style={{ animationDelay: `${i * 80}ms`, background: i === 0 ? "rgba(201,168,76,0.04)" : "transparent" }}
+                  >
+                    {/* Icon + name */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
+                      >
+                        {a.icon}
+                      </div>
+                      <span className="text-sm font-semibold text-white whitespace-nowrap">{a.name}</span>
+                    </div>
+
+                    {/* Industry */}
+                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{a.industry}</span>
+
+                    {/* Handled */}
+                    <span className="text-sm font-bold text-right" style={{ color: "#c9a84c" }}>{a.handled}</span>
+
+                    {/* Status */}
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: a.status === "active" ? "#34d399" : "rgba(255,255,255,0.2)" }}
+                      />
+                      <span className="text-xs capitalize" style={{ color: a.status === "active" ? "rgba(52,211,153,0.8)" : "rgba(255,255,255,0.25)" }}>
+                        {a.status}
+                      </span>
                     </div>
                   </div>
                 ))}
-                {/* Typing indicator */}
-                <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </div>
-                </div>
               </div>
 
-              {/* Input bar */}
-              <div className="px-5 py-4 bg-white border-t border-gray-100 flex items-center gap-3">
-                <div className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm text-gray-400">Type a message...</div>
-                <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
-                  <ArrowRight className="w-4 h-4 text-white" />
+              {/* Footer bar */}
+              <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>4,646 conversations handled today</span>
+                <div
+                  className="text-xs font-semibold px-3 py-1 rounded-lg"
+                  style={{ background: "rgba(201,168,76,0.12)", color: "#c9a84c", border: "1px solid rgba(201,168,76,0.2)" }}
+                >
+                  + New Agent
                 </div>
               </div>
             </div>
 
-            {/* Floating badges */}
-            <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-2 animate-float">
-              <span className="text-2xl">🎉</span>
+            {/* Floating chip — response time */}
+            <div
+              className="absolute -top-4 -right-4 flex items-center gap-2 px-3.5 py-2.5 rounded-xl animate-float"
+              style={{ background: "rgba(14,14,14,0.96)", border: "1px solid rgba(201,168,76,0.22)", backdropFilter: "blur(12px)" }}
+            >
+              <span className="text-base">⚡</span>
               <div>
-                <p className="text-xs font-bold text-gray-900">Booking Confirmed!</p>
-                <p className="text-xs text-gray-400">Just now</p>
+                <p className="text-white text-xs font-bold leading-none mb-0.5">Replies in 0.3s</p>
+                <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.3)" }}>Always online</p>
               </div>
             </div>
 
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-2 animate-float" style={{ animationDelay: "1.5s" }}>
-              <span className="text-2xl">⚡</span>
+            {/* Floating chip — savings */}
+            <div
+              className="absolute -bottom-4 -left-4 flex items-center gap-2 px-3.5 py-2.5 rounded-xl animate-float"
+              style={{ background: "rgba(14,14,14,0.96)", border: "1px solid rgba(201,168,76,0.22)", backdropFilter: "blur(12px)", animationDelay: "1.8s" }}
+            >
+              <span className="text-base">💰</span>
               <div>
-                <p className="text-xs font-bold text-gray-900">Response in 0.3s</p>
-                <p className="text-xs text-gray-400">Powered by GPT-4o</p>
+                <p className="text-white text-xs font-bold leading-none mb-0.5">Save 40 hrs/week</p>
+                <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.3)" }}>per business</p>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Stats bar */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map(({ value, label, icon: Icon }) => (
-            <div key={label} className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Icon className="w-4 h-4 text-indigo-500" />
-                <p className="text-3xl font-extrabold text-gray-900">{value}</p>
-              </div>
-              <p className="text-sm text-gray-500">{label}</p>
-            </div>
-          ))}
-        </div>
       </div>
+
+      {/* Bottom fade */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none"
+        style={{ background: "linear-gradient(to top, #ffffff, transparent)" }}
+      />
     </section>
   );
 }

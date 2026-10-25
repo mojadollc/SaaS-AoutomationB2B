@@ -15,13 +15,13 @@ export async function POST(req: Request) {
 
   const plan = parsed.data.plan as PlanKey;
   const amountPHP = PLAN_PRICES_PHP[plan];
-  const externalId = `agentflow_${session.user.id}_${plan}_${Date.now()}`;
+  const externalId = `Aurex_${session.user.id}_${plan}_${Date.now()}`;
 
   const invoice = await createXenditInvoice(
     externalId,
     amountPHP,
     session.user.email!,
-    `AgentFlow ${plan} Plan — Monthly Subscription`,
+    `Aurex ${plan} Plan — Monthly Subscription`,
     { userId: session.user.id, plan }
   );
 

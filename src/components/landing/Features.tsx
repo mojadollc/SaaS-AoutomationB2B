@@ -1,86 +1,91 @@
-import { Bot, Zap, Calendar, BarChart3, ShoppingCart, Plug } from "lucide-react";
-
 const features = [
   {
-    icon: Bot,
-    color: "from-indigo-500 to-indigo-600",
-    bg: "bg-indigo-50",
-    title: "Customer Support Agent",
-    desc: "Answers FAQs, handles complaints, and escalates complex issues to humans — automatically, 24/7.",
+    number: "01",
+    title: "Customer Support",
+    desc: "Answers FAQs, resolves complaints, and escalates complex cases to humans — automatically, 24/7.",
     stat: "↓ 60% support tickets",
+    size: "lg",
   },
   {
-    icon: Zap,
-    color: "from-violet-500 to-violet-600",
-    bg: "bg-violet-50",
-    title: "Lead Follow-Up Agent",
-    desc: "Re-engages cold leads, handles objections, and books calls without a sales rep ever lifting a finger.",
-    stat: "↑ 3x more conversions",
+    number: "02",
+    title: "Lead Follow-Up",
+    desc: "Re-engages cold leads, handles objections, and books calls without a sales rep.",
+    stat: "↑ 3× conversions",
+    size: "sm",
   },
   {
-    icon: Calendar,
-    color: "from-blue-500 to-blue-600",
-    bg: "bg-blue-50",
+    number: "03",
     title: "Appointment Booking",
-    desc: "Collects details, checks availability, and confirms bookings for clinics, salons, restaurants, and more.",
+    desc: "Collects details, checks availability, and confirms bookings for any service business.",
     stat: "↓ 80% no-shows",
+    size: "sm",
   },
   {
-    icon: ShoppingCart,
-    color: "from-emerald-500 to-emerald-600",
-    bg: "bg-emerald-50",
-    title: "Order Taking Agent",
-    desc: "Takes food, product, or service orders conversationally via chat — on any channel.",
+    number: "04",
+    title: "Order Taking",
+    desc: "Takes food, product, or service orders conversationally via chat on any channel.",
     stat: "↑ 40% order volume",
+    size: "sm",
   },
   {
-    icon: BarChart3,
-    color: "from-orange-500 to-orange-600",
-    bg: "bg-orange-50",
+    number: "05",
     title: "Report Generator",
-    desc: "Turns raw data into structured business reports with summaries, insights, and recommendations.",
+    desc: "Turns raw data into structured business reports with insights and recommendations.",
     stat: "Save 5 hrs/week",
+    size: "sm",
   },
   {
-    icon: Plug,
-    color: "from-pink-500 to-pink-600",
-    bg: "bg-pink-50",
+    number: "06",
     title: "Works Everywhere",
-    desc: "Connect to WhatsApp, Messenger, Slack, your website widget, Zapier, and any REST API.",
+    desc: "WhatsApp, Messenger, Slack, website widget, Zapier, and any REST API.",
     stat: "5,000+ integrations",
+    size: "lg",
   },
 ];
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
-            ⚡ What AgentFlow Does
+    <section id="features" className="py-32 bg-white">
+      <div className="max-w-7xl mx-auto px-8">
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-20">
+          <div>
+            <p className="text-xs font-semibold text-[#c9a84c] uppercase tracking-[0.3em] mb-4">What We Do</p>
+            <h2 className="text-5xl md:text-6xl font-black text-gray-900 leading-[1] tracking-tighter">
+              One platform.<br />
+              <span className="gradient-text">Every automation.</span>
+            </h2>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            One Platform,{" "}
-            <span className="gradient-text">Every Automation</span>
-          </h2>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Five purpose-built AI agents that handle the repetitive work so your team can focus on what matters.
+          <p className="text-gray-400 max-w-xs text-sm leading-relaxed md:text-right">
+            Five purpose-built AI agents that handle the repetitive work so your team can focus on growth.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, color, bg, title, desc, stat }) => (
-            <div key={title} className="card-hover bg-white border border-gray-100 rounded-2xl p-7 shadow-sm">
-              <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-5`}>
-                <div className={`w-7 h-7 bg-gradient-to-br ${color} rounded-lg flex items-center justify-center`}>
-                  <Icon className="w-4 h-4 text-white" />
-                </div>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {features.map((f, i) => (
+            <div
+              key={f.number}
+              className={`group relative bg-[#faf8f3] border border-[#e8c97a]/20 rounded-3xl p-8 hover:border-[#c9a84c]/50 hover:bg-[#fdf6e3] transition-all duration-300 ${
+                i === 0 || i === 5 ? "md:col-span-2" : ""
+              }`}
+            >
+              {/* Number */}
+              <span className="text-xs font-bold text-[#c9a84c]/50 tracking-widest mb-6 block">{f.number}</span>
+
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{f.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-6">{f.desc}</p>
+
+              {/* Stat pill */}
+              <div className="inline-flex items-center gap-2 bg-white border border-[#e8c97a]/40 px-3 py-1.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-[#c9a84c] rounded-full" />
+                <span className="text-xs font-semibold text-gray-700">{f.stat}</span>
               </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed mb-4">{desc}</p>
-              <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                {stat}
+
+              {/* Hover arrow */}
+              <div className="absolute top-8 right-8 w-8 h-8 rounded-full border border-[#c9a84c]/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[#c9a84c] text-xs">→</span>
               </div>
             </div>
           ))}

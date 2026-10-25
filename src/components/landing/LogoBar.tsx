@@ -9,16 +9,13 @@ const industries = [
 
 export default function LogoBar() {
   return (
-    <section className="py-12 bg-gray-50 border-y border-gray-100 overflow-hidden">
-      <p className="text-center text-sm font-semibold text-gray-400 uppercase tracking-widest mb-8">
-        Trusted by businesses across every industry
+    <section className="py-16 bg-white border-b border-gray-100 overflow-hidden">
+      <p className="text-center text-xs font-semibold text-gray-300 uppercase tracking-[0.3em] mb-8">
+        Built for every industry
       </p>
-      <div className="flex gap-8 animate-marquee whitespace-nowrap">
+      <div className="flex gap-6 animate-marquee whitespace-nowrap">
         {industries.map((item, i) => (
-          <span
-            key={i}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 bg-white border border-gray-200 px-5 py-2.5 rounded-full shadow-sm shrink-0"
-          >
+          <span key={i} className="inline-flex items-center gap-2 text-sm text-gray-500 bg-[#faf8f3] border border-[#e8c97a]/40 px-5 py-2.5 rounded-full shrink-0 font-medium">
             {item}
           </span>
         ))}

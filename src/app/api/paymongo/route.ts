@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
   const link = await createPayMongoPaymentLink(
     amountPHP,
-    `AgentFlow ${plan} Plan — Monthly Subscription`,
+    `Aurex ${plan} Plan — Monthly Subscription`,
     { userId: session.user.id, plan }
   );
 

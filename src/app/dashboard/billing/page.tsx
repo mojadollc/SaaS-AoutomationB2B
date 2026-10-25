@@ -140,21 +140,21 @@ export default function BillingPage() {
                 disabled={!compatible}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
                   paymentMethod === method.id
-                    ? "border-indigo-500 bg-indigo-50"
+                    ? "border-amber-500 bg-amber-50"
                     : compatible
-                    ? "border-gray-200 hover:border-indigo-300 bg-white"
+                    ? "border-gray-200 hover:border-amber-300 bg-white"
                     : "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
                 }`}
               >
                 <span className="text-2xl">{method.logo}</span>
                 <div>
-                  <p className={`text-sm font-semibold ${paymentMethod === method.id ? "text-indigo-700" : "text-gray-900"}`}>
+                  <p className={`text-sm font-semibold ${paymentMethod === method.id ? "text-amber-700" : "text-gray-900"}`}>
                     {method.label}
                   </p>
                   <p className="text-xs text-gray-500">{method.desc}</p>
                 </div>
                 {paymentMethod === method.id && (
-                  <CheckCircle className="w-4 h-4 text-indigo-500 ml-1 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-amber-500 ml-1 shrink-0" />
                 )}
               </button>
             );
@@ -185,10 +185,10 @@ export default function BillingPage() {
       {/* Plan cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {PLANS.map((plan) => (
-          <Card key={plan.key} className={plan.highlight ? "border-indigo-500 border-2" : ""}>
+          <Card key={plan.key} className={plan.highlight ? "border-amber-500 border-2 bg-gradient-to-b from-amber-50 to-yellow-50" : ""}>
             <CardHeader>
               {plan.highlight && (
-                <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 mb-2">
+                <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 mb-2">
                   <Zap className="w-3 h-3" /> Most Popular
                 </div>
               )}

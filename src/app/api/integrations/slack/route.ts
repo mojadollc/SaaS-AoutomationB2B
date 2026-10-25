@@ -30,14 +30,14 @@ export async function POST(req: Request) {
   const userId = params.get("user_id") ?? "";
   const userName = params.get("user_name") ?? "slack_user";
 
-  // Format: /agentflow <agentId> <message>
+  // Format: /Aurex <agentId> <message>
   const [agentId, ...rest] = text.trim().split(" ");
   const message = rest.join(" ");
 
   if (!agentId || !message) {
     return NextResponse.json({
       response_type: "ephemeral",
-      text: "Usage: `/agentflow <agentId> <your message>`",
+      text: "Usage: `/Aurex <agentId> <your message>`",
     });
   }
 
