@@ -56,18 +56,26 @@ async function runGrok(systemPrompt: string, messages: ChatMessage[]): Promise<s
 async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
   const apiKey = await getSetting("GEMINI_API_KEY");
   if (!apiKey) throw new Error("Gemini API key not configured. Add it in Admin → Settings → API Keys.");
-  // Gemini supports OpenAI-compatible API — no extra SDK needed
-  const client = new OpenAI({
-    apiKey,
-    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-  });
-  const res = await client.chat.completions.create({
-    model: "gemini-2.0-flash",
-    messages: [{ role: "system", content: systemPrompt }, ...messages],
-    max_tokens: 500,
-    temperature: 0.7,
-  });
-  return res.choices[0].message.content ?? "";
+
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    })),
+    generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
+  };
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+  );
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json?.error?.message ?? `Gemini error ${res.status}`);
+  }
+  return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 export async function runAgent(
