@@ -77,7 +77,7 @@ export default async function AdminPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="font-semibold text-white mb-4">Users by Plan</h2>
           <div className="space-y-3">
-            {usersByPlan.map((p) => (
+            {usersByPlan.map((p: { plan: string; _count: number }) => (
               <div key={p.plan} className="flex items-center justify-between">
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${planColors[p.plan] ?? "bg-gray-700 text-gray-300"}`}>
                   {p.plan}
@@ -100,7 +100,7 @@ export default async function AdminPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="font-semibold text-white mb-4">Conversations by Channel</h2>
           <div className="space-y-3">
-            {conversationsByChannel.map((c) => (
+            {conversationsByChannel.map((c: { channel: string; _count: number }) => (
               <div key={c.channel} className="flex items-center justify-between">
                 <span className="text-sm text-gray-300 capitalize">{c.channel}</span>
                 <div className="flex items-center gap-3">
@@ -130,7 +130,7 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {recentUsers.map((u) => (
+              {recentUsers.map((u: { id: string; name: string | null; email: string; plan: string; createdAt: Date }) => (
                 <tr key={u.id}>
                   <td className="py-3 text-white font-medium">{u.name ?? "—"}</td>
                   <td className="py-3 text-gray-400">{u.email}</td>

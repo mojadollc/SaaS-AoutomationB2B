@@ -80,7 +80,7 @@ export async function GET(req: Request) {
 
   // Zapier trigger format: array of flat objects with unique id
   return NextResponse.json(
-    conversations.map((c) => ({
+    conversations.map((c: any) => ({
       id: c.id,
       contact: c.contact,
       status: c.status,

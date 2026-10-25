@@ -14,7 +14,7 @@ export async function dispatchWebhooks(userId: string, event: WebhookEvent, payl
   });
 
   await Promise.allSettled(
-    endpoints.map(async (endpoint) => {
+    endpoints.map(async (endpoint: { url: string; secret: string }) => {
       const body = JSON.stringify({ event, data: payload, timestamp: new Date().toISOString() });
       const sig = crypto.createHmac("sha256", endpoint.secret).update(body).digest("hex");
 

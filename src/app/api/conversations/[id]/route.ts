@@ -39,7 +39,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     data: { conversationId: id, role: "user", content: parsed.data.message },
   });
 
-  const history = conversation.messages.map((m) => ({
+  const history = conversation.messages.map((m: { role: string; content: string }) => ({
     role: m.role as "user" | "assistant",
     content: m.content,
   }));

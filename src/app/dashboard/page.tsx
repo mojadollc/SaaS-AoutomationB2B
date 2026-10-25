@@ -81,7 +81,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {recentConvos.map((conv) => (
+              {recentConvos.map((conv: any) => (
                 <Link
                   key={conv.id}
                   href={`/dashboard/conversations?id=${conv.id}`}
