@@ -6,29 +6,84 @@ export async function POST(req: Request) {
   const rawBody = await req.text();
   const sigHeader = req.headers.get("paymongo-signature") ?? "";
 
+  // Verify signature using secret_key from DB (auto-saved when webhook was created)
   const valid = await verifyPayMongoWebhookAsync(rawBody, sigHeader);
   if (!valid) {
+    console.error("[PayMongo Webhook] Invalid signature");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const event = JSON.parse(rawBody);
+  let event: any;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
   const eventType: string = event.data?.attributes?.type ?? "";
+  console.log("[PayMongo Webhook] Event:", eventType);
 
-  if (eventType === "payment.paid" || eventType === "link.payment.paid") {
-    const payment = event.data?.attributes?.data ?? event.data?.attributes;
-    const remarks: string = payment?.attributes?.remarks ?? "{}";
+  // ── payment.paid ──────────────────────────────────────────────────────────
+  // Fired when a direct payment is paid
+  if (eventType === "payment.paid") {
+    const payment = event.data?.attributes?.data;
+    await handlePaymentPaid(payment);
+  }
 
-    let metadata: { userId?: string; plan?: string } = {};
-    try { metadata = JSON.parse(remarks); } catch { /* ignore */ }
+  // ── link.payment.paid ─────────────────────────────────────────────────────
+  // Fired when a Payment Link is paid — this is what we use for subscriptions
+  if (eventType === "link.payment.paid") {
+    const payment = event.data?.attributes?.data;
+    await handlePaymentPaid(payment);
+  }
 
-    const { userId, plan } = metadata;
-    if (!userId || !plan) return NextResponse.json({ received: true });
+  // ── checkout_session.payment.paid ─────────────────────────────────────────
+  // Fired when a Checkout Session payment succeeds
+  if (eventType === "checkout_session.payment.paid") {
+    const session = event.data?.attributes?.data;
+    const metadata = session?.attributes?.metadata ?? {};
+    await upgradePlan(metadata?.userId, metadata?.plan, session?.id);
+  }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { plan: plan as any, paymongoLinkId: payment?.id ?? null },
-    });
+  // ── payment.failed ────────────────────────────────────────────────────────
+  if (eventType === "payment.failed" || eventType === "checkout_session.payment.failed") {
+    console.log("[PayMongo Webhook] Payment failed for event:", eventType);
+    // Could send a notification email here in the future
   }
 
   return NextResponse.json({ received: true });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+async function handlePaymentPaid(payment: any) {
+  if (!payment) return;
+
+  // metadata is stored in remarks as JSON string
+  const remarks: string = payment?.attributes?.remarks ?? "{}";
+  let metadata: { userId?: string; plan?: string } = {};
+  try {
+    metadata = JSON.parse(remarks);
+  } catch {
+    return;
+  }
+
+  await upgradePlan(metadata.userId, metadata.plan, payment?.id);
+}
+
+async function upgradePlan(userId?: string, plan?: string, paymentId?: string) {
+  if (!userId || !plan) return;
+
+  const validPlans = ["STARTER", "PRO", "AGENCY"];
+  if (!validPlans.includes(plan)) return;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      plan: plan as any,
+      paymongoLinkId: paymentId ?? null,
+    },
+  });
+
+  console.log(`[PayMongo Webhook] Upgraded user ${userId} to ${plan}`);
 }

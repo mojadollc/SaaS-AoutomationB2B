@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw, Power } from "lucide-react";
+import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw, Power, Webhook, Plus, ToggleLeft, ToggleRight, Copy, ExternalLink } from "lucide-react";
 import { applyTheme, loadTheme, saveTheme, THEME_DEFAULTS, AdminTheme } from "@/components/admin/ThemeProvider";
 
 // ─── Appearance data ───────────────────────────────────────────────────────────
@@ -137,10 +137,82 @@ export default function AdminSettingsPage() {
   const [gateways, setGateways] = useState({ stripe: true, paymongo: true, xendit: true });
   const [gatewaySaving, setGatewaySaving] = useState(false);
 
+  // PayMongo webhook manager state
+  const [pmWebhooks, setPmWebhooks] = useState<any[]>([]);
+  const [pmWebhookUrl, setPmWebhookUrl] = useState("");
+  const [pmWebhookLoading, setPmWebhookLoading] = useState(false);
+  const [pmWebhookCreating, setPmWebhookCreating] = useState(false);
+  const [pmWebhookMsg, setPmWebhookMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pmSecretSaved, setPmSecretSaved] = useState(false);
+  const [pmCopied, setPmCopied] = useState(false);
+
+  const PM_EVENTS = [
+    "payment.paid",
+    "payment.failed",
+    "link.payment.paid",
+    "checkout_session.payment.paid",
+    "checkout_session.payment.failed",
+  ];
+
+  async function loadPmWebhooks() {
+    setPmWebhookLoading(true);
+    try {
+      const res = await fetch("/api/admin/paymongo/webhook");
+      if (res.ok) {
+        const data = await res.json();
+        setPmWebhooks(data.webhooks ?? []);
+        setPmSecretSaved(data.savedSecret ?? false);
+      }
+    } catch { /* ignore */ }
+    setPmWebhookLoading(false);
+  }
+
+  async function createPmWebhook() {
+    if (!pmWebhookUrl) return;
+    setPmWebhookCreating(true);
+    setPmWebhookMsg(null);
+    try {
+      const res = await fetch("/api/admin/paymongo/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: pmWebhookUrl, events: PM_EVENTS }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPmWebhookMsg({ ok: true, text: `Webhook created! Secret key auto-saved to database. ✓` });
+        setPmWebhookUrl("");
+        setPmSecretSaved(true);
+        loadPmWebhooks();
+        loadApiKeys(); // refresh to show saved secret
+      } else {
+        setPmWebhookMsg({ ok: false, text: data.error ?? "Failed to create webhook" });
+      }
+    } catch (e: any) {
+      setPmWebhookMsg({ ok: false, text: e.message });
+    }
+    setPmWebhookCreating(false);
+  }
+
+  async function togglePmWebhook(id: string, status: string) {
+    const action = status === "enabled" ? "disable" : "enable";
+    await fetch(`/api/admin/paymongo/webhook/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    loadPmWebhooks();
+  }
+
+  function copyWebhookUrl(url: string) {
+    navigator.clipboard.writeText(url);
+    setPmCopied(true);
+    setTimeout(() => setPmCopied(false), 2000);
+  }
+
   useEffect(() => { setTheme(loadTheme()); }, []);
 
   useEffect(() => {
-    if (tab === "api") { loadApiKeys(); loadGateways(); }
+    if (tab === "api") { loadApiKeys(); loadGateways(); loadPmWebhooks(); }
   }, [tab]);
 
   async function loadGateways() {
@@ -439,6 +511,121 @@ export default function AdminSettingsPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── PayMongo Webhook Manager ── */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Webhook className="w-4 h-4 text-blue-400" />
+                <h2 className="text-white font-semibold">PayMongo Webhooks</h2>
+                {pmSecretSaved && (
+                  <span className="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full font-medium">Secret saved ✓</span>
+                )}
+              </div>
+              <button onClick={loadPmWebhooks} className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                <RefreshCw className={`w-3.5 h-3.5 ${pmWebhookLoading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs mb-4">
+              Register your webhook URL on PayMongo. The <code className="text-blue-400">secret_key</code> is auto-saved to the database — no manual copy needed.
+            </p>
+
+            {/* Webhook URL info box */}
+            <div className="mb-4 bg-gray-800 border border-gray-700 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Your Webhook Receiver URL</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs text-blue-300 font-mono bg-gray-900 px-3 py-2 rounded-lg truncate">
+                  {(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com")}/api/paymongo/webhook
+                </code>
+                <button
+                  onClick={() => copyWebhookUrl(`${apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com"}/api/paymongo/webhook`)}
+                  className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors shrink-0"
+                  title="Copy URL"
+                >
+                  {pmCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Events to subscribe: <span className="text-gray-300">payment.paid · payment.failed · link.payment.paid · checkout_session.payment.paid · checkout_session.payment.failed</span>
+              </p>
+            </div>
+
+            {/* Create webhook form */}
+            <div className="flex gap-2 mb-4">
+              <input
+                value={pmWebhookUrl}
+                onChange={(e) => setPmWebhookUrl(e.target.value)}
+                placeholder="https://yourdomain.com/api/paymongo/webhook"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
+              />
+              <button
+                onClick={createPmWebhook}
+                disabled={pmWebhookCreating || !pmWebhookUrl}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                {pmWebhookCreating ? "Creating..." : "Register"}
+              </button>
+            </div>
+
+            {/* Status message */}
+            {pmWebhookMsg && (
+              <div className={`mb-4 px-3 py-2.5 rounded-lg text-xs font-medium ${
+                pmWebhookMsg.ok
+                  ? "bg-green-950 border border-green-800 text-green-300"
+                  : "bg-red-950 border border-red-800 text-red-300"
+              }`}>
+                {pmWebhookMsg.ok ? "✓" : "✗"} {pmWebhookMsg.text}
+              </div>
+            )}
+
+            {/* Registered webhooks list */}
+            {pmWebhooks.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Registered Webhooks</p>
+                {pmWebhooks.map((wh) => (
+                  <div key={wh.id} className="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3 gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-mono text-gray-300 truncate">{wh.url}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{wh.events?.join(" · ")}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        wh.status === "enabled" ? "bg-green-900 text-green-300" : "bg-gray-700 text-gray-400"
+                      }`}>
+                        {wh.status}
+                      </span>
+                      <button
+                        onClick={() => togglePmWebhook(wh.id, wh.status)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+                        title={wh.status === "enabled" ? "Disable" : "Enable"}
+                      >
+                        {wh.status === "enabled"
+                          ? <ToggleRight className="w-4 h-4 text-green-400" />
+                          : <ToggleLeft className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              !pmWebhookLoading && (
+                <div className="text-center py-6 text-gray-600">
+                  <Webhook className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs">No webhooks registered yet. Enter your URL above and click Register.</p>
+                </div>
+              )
+            )}
+
+            <a
+              href="https://docs.paymongo.com/reference/create-a-webhook"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 mt-4"
+            >
+              <ExternalLink className="w-3 h-3" /> PayMongo Webhook Docs
+            </a>
           </div>
 
           <div className="flex items-center justify-between">
