@@ -6,9 +6,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex flex-col leading-none">
           <span className="font-bold text-lg tracking-tight text-white">Aurex</span>
-          <span className="block text-[10px] text-white/30 tracking-wide -mt-0.5">AI Agentsflow</span>
+          <span className="text-[10px] text-white/30 tracking-wide mt-0.5">AI Agentsflow</span>
         </Link>
 
         {/* Nav links */}
