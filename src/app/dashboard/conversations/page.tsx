@@ -92,25 +92,22 @@ export default function ConversationsPage() {
     setAiTyping(false);
     setSending(false);
 
+    const data = await res.json().catch(() => ({}));
+
     if (res.ok) {
-      const aiMessage: Message = await res.json();
-      // Replace optimistic message + append real AI reply
       setSelected((prev) => {
         if (!prev) return prev;
         const msgs = prev.messages.filter((m) => m.id !== optimisticMsg.id);
-        return { ...prev, messages: [...msgs, { ...optimisticMsg, id: `user-${Date.now()}` }, aiMessage] };
+        return { ...prev, messages: [...msgs, { ...optimisticMsg, id: `user-${Date.now()}` }, data] };
       });
-      // Sync sidebar quietly
       fetchConversations();
     } else {
-      // Rollback optimistic message
       setSelected((prev) => {
         if (!prev) return prev;
         return { ...prev, messages: prev.messages.filter((m) => m.id !== optimisticMsg.id) };
       });
       setMessage(optimisticMsg.content);
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to send. AI provider error — check your API keys in Admin → Settings.");
+      setError(data.error || `Request failed (${res.status})`);
     }
   }
 
@@ -132,14 +129,13 @@ export default function ConversationsPage() {
 
     setStarting(false);
 
+    const data = await res.json().catch(() => ({}));
+
     if (res.ok) {
-      const data = await res.json();
-      // Fetch fresh list and select the new conversation
       await fetchConversations(data.conversation.id);
       setError("");
     } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to start conversation. Check your OpenAI API key in Admin → Settings.");
+      setError(data.error || `Request failed (${res.status})`);
     }
   }
 
