@@ -1,5 +1,5 @@
 export const PLAN_LIMITS = {
-  FREE:    { agents: 1,  conversations: 50,   name: "Free" },
+  FREE:    { agents: 1,  conversations: 30,   name: "Free" },
   STARTER: { agents: 3,  conversations: 500,  name: "Starter" },
   PRO:     { agents: 10, conversations: 5000, name: "Pro" },
   AGENCY:  { agents: -1, conversations: -1,   name: "Agency" },
@@ -63,7 +63,7 @@ export async function checkConversationLimit(
 }
 
 export const PLAN_FEATURES = {
-  FREE:    ["1 AI Agent", "50 conversations/mo", "Email support"],
+  FREE:    ["1 AI Agent", "30 conversations/mo", "Email support"],
   STARTER: ["3 AI Agents", "500 conversations/mo", "Priority support", "Analytics"],
   PRO:     ["10 AI Agents", "5,000 conversations/mo", "Custom prompts", "Webhooks", "API access"],
   AGENCY:  ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support", "Custom integrations"],

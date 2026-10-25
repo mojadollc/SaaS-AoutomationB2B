@@ -20,7 +20,7 @@ const DEFAULT_PLANS: Plan[] = [
     key: "FREE", name: "Free",
     priceUSD: 0, pricePHP: 0,
     desc: "Perfect for trying out Aurex.",
-    features: ["1 AI Agent", "50 conversations/mo", "Web widget", "Email support"],
+    features: ["1 AI Agent", "30 conversations/mo", "Web widget", "Email support"],
     cta: "Get Started Free", href: "/register", highlight: false,
   },
   {
