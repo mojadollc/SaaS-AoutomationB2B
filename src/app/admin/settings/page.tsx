@@ -164,6 +164,14 @@ export default function AdminSettingsPage() {
   const [plans, setPlans] = useState<PricingPlan[]>(DEFAULT_PLANS);
   const [pricingSaving, setPricingSaving] = useState(false);
   const [pricingSaved, setPricingSaved] = useState(false);
+  const [usdToPhp, setUsdToPhp] = useState(57);
+
+  useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.rates?.PHP) setUsdToPhp(Math.round(d.rates.PHP)); })
+      .catch(() => {});
+  }, []);
 
   // Appearance state
   const [theme, setTheme] = useState<Partial<AdminTheme>>({});
@@ -285,7 +293,13 @@ export default function AdminSettingsPage() {
   }
 
   function updatePlan(i: number, patch: Partial<PricingPlan>) {
-    setPlans((prev) => prev.map((p, idx) => idx === i ? { ...p, ...patch } : p));
+    setPlans((prev) => prev.map((p, idx) => {
+      if (idx !== i) return p;
+      const updated = { ...p, ...patch };
+      if ("priceUSD" in patch) updated.pricePHP = Math.round(patch.priceUSD! * usdToPhp);
+      if ("pricePHP" in patch) updated.priceUSD = Math.round(patch.pricePHP! / usdToPhp);
+      return updated;
+    }));
   }
 
   function updateFeature(planIdx: number, featIdx: number, val: string) {
@@ -596,6 +610,11 @@ export default function AdminSettingsPage() {
       {tab === "pricing" && (
         <div className="space-y-6">
           <p className="text-gray-400 text-sm">Edit plan names, prices, features, and CTA buttons. Changes reflect live on the landing page.</p>
+          <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg w-fit">
+            <span className="text-xs text-gray-500">Live exchange rate:</span>
+            <span className="text-xs font-semibold text-amber-400">$1 USD = ₱{usdToPhp} PHP</span>
+            <span className="text-xs text-gray-600">· auto-converts both fields</span>
+          </div>
           {plans.map((plan, i) => (
             <div key={plan.key} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -623,14 +642,22 @@ export default function AdminSettingsPage() {
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Price (USD) /mo</label>
-                  <input type="number" min={0} value={plan.priceUSD} onChange={(e) => updatePlan(i, { priceUSD: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                  <label className="text-xs text-gray-400 mb-1 block">💵 Price USD /mo</label>
+                  <input type="number" min={0} value={plan.priceUSD}
+                    onChange={(e) => updatePlan(i, { priceUSD: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500" />
+                  {plan.priceUSD > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">≈ ₱{(plan.priceUSD * usdToPhp).toLocaleString()} PHP <span className="text-gray-600">(rate: {usdToPhp})</span></p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Price (PHP) /mo</label>
-                  <input type="number" min={0} value={plan.pricePHP} onChange={(e) => updatePlan(i, { pricePHP: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                  <label className="text-xs text-gray-400 mb-1 block">🇵🇭 Price PHP /mo</label>
+                  <input type="number" min={0} value={plan.pricePHP}
+                    onChange={(e) => updatePlan(i, { pricePHP: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500" />
+                  {plan.pricePHP > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">≈ ${(plan.pricePHP / usdToPhp).toFixed(2)} USD <span className="text-gray-600">(rate: {usdToPhp})</span></p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 mb-1 block">CTA Button Text</label>
