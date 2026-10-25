@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { Shield, LayoutDashboard, Users, ShoppingCart, Key, LogOut, Settings } from "lucide-react";
+import { Shield, LayoutDashboard, Users, ShoppingCart, Key, LogOut, Settings, TicketIcon } from "lucide-react";
 import AdminThemeProvider from "@/components/admin/ThemeProvider";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Overview" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/orders", icon: ShoppingCart, label: "All Orders" },
+  { href: "/admin/tickets", icon: TicketIcon, label: "Support Tickets" },
   { href: "/admin/keys", icon: Key, label: "API Keys" },
   { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
