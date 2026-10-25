@@ -48,6 +48,10 @@ export async function POST(req: Request) {
 
       const senderId = event.sender.id as string;
       const messageText = event.message.text as string;
+
+      // Validate senderId is a numeric Facebook PSID
+      if (!/^\d+$/.test(senderId)) continue;
+
       const externalId = `messenger_${senderId}_${agentId}`;
 
       let conversation = await prisma.conversation.findUnique({
@@ -91,9 +95,12 @@ export async function POST(req: Request) {
 
       // Send reply back via Messenger Send API — URL is hardcoded to trusted FB Graph API
       const pageToken = await getSetting("MESSENGER_PAGE_ACCESS_TOKEN");
-      await fetch(`${ALLOWED_FB_GRAPH}/v19.0/me/messages?access_token=${pageToken}`, {
+      await fetch(`${ALLOWED_FB_GRAPH}/v19.0/me/messages`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${pageToken}`,
+        },
         body: JSON.stringify({
           recipient: { id: senderId },
           message: { text: aiReply },
