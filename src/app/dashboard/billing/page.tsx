@@ -36,6 +36,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string>("FREE");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [gatewayError, setGatewayError] = useState("");
   const [enabledGateways, setEnabledGateways] = useState({ stripe: true, paymongo: true, xendit: true });
 
   useEffect(() => {
@@ -72,19 +73,28 @@ export default function BillingPage() {
   async function handleUpgrade(planKey: string) {
     if (planKey === "FREE" || planKey === currentPlan) return;
     setLoading(planKey);
+    setGatewayError("");
 
     const endpoint =
       paymentMethod === "paymongo" ? "/api/paymongo" :
       paymentMethod === "xendit"   ? "/api/xendit" :
       "/api/stripe";
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: planKey }),
-    });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planKey }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setGatewayError(data.error ?? "Payment gateway error. Please check API keys in Admin → Settings.");
+      }
+    } catch {
+      setGatewayError("Could not connect to payment gateway. Please try again.");
+    }
     setLoading(null);
   }
 
@@ -117,6 +127,17 @@ export default function BillingPage() {
 
   return (
     <div className="p-8">
+      {/* Error banner */}
+      {gatewayError && (
+        <div className="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+          <span className="text-red-500 shrink-0">⚠️</span>
+          <p className="text-sm text-red-700 flex-1">{gatewayError}</p>
+          <button onClick={() => setGatewayError("")} className="text-red-400 hover:text-red-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Success banner */}
       {showSuccess && (
         <div className="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">

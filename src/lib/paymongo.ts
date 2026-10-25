@@ -1,10 +1,12 @@
 import crypto from "crypto";
+import { getSettings } from "@/lib/settings";
 
 const PAYMONGO_BASE = "https://api.paymongo.com/v1";
-const SECRET_KEY = process.env.PAYMONGO_SECRET_KEY!;
 
-function authHeader() {
-  return "Basic " + Buffer.from(SECRET_KEY + ":").toString("base64");
+async function authHeader(): Promise<string> {
+  const { PAYMONGO_SECRET_KEY } = await getSettings(["PAYMONGO_SECRET_KEY"]);
+  if (!PAYMONGO_SECRET_KEY) throw new Error("PayMongo secret key not configured. Go to Admin → Settings → API Keys to add it.");
+  return "Basic " + Buffer.from(PAYMONGO_SECRET_KEY + ":").toString("base64");
 }
 
 export interface PayMongoPaymentLink {
@@ -13,10 +15,6 @@ export interface PayMongoPaymentLink {
   reference_number: string;
 }
 
-/**
- * Creates a PayMongo Payment Link for a subscription plan.
- * Amount is in centavos (PHP × 100).
- */
 export async function createPayMongoPaymentLink(
   amountPHP: number,
   description: string,
@@ -25,13 +23,13 @@ export async function createPayMongoPaymentLink(
   const res = await fetch(`${PAYMONGO_BASE}/links`, {
     method: "POST",
     headers: {
-      Authorization: authHeader(),
+      Authorization: await authHeader(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
         attributes: {
-          amount: amountPHP * 100, // centavos
+          amount: amountPHP * 100,
           currency: "PHP",
           description,
           remarks: JSON.stringify(metadata),
@@ -54,15 +52,13 @@ export async function createPayMongoPaymentLink(
   };
 }
 
-/**
- * Verifies a PayMongo webhook signature.
- * Header: paymongo-signature  format: t=<ts>,te=<hmac>,li=<hmac>
- */
-export function verifyPayMongoWebhook(
+export async function verifyPayMongoWebhookAsync(
   rawBody: string,
-  signatureHeader: string,
-  webhookSecret: string
-): boolean {
+  signatureHeader: string
+): Promise<boolean> {
+  const { PAYMONGO_WEBHOOK_SECRET } = await getSettings(["PAYMONGO_WEBHOOK_SECRET"]);
+  if (!PAYMONGO_WEBHOOK_SECRET) return false;
+
   try {
     const parts = Object.fromEntries(
       signatureHeader.split(",").map((p) => p.split("=") as [string, string])
@@ -71,7 +67,7 @@ export function verifyPayMongoWebhook(
     const testHmac = parts["te"] ?? parts["li"];
     const payload = `${timestamp}.${rawBody}`;
     const computed = crypto
-      .createHmac("sha256", webhookSecret)
+      .createHmac("sha256", PAYMONGO_WEBHOOK_SECRET)
       .update(payload)
       .digest("hex");
     return computed === testHmac;
@@ -80,13 +76,9 @@ export function verifyPayMongoWebhook(
   }
 }
 
-/**
- * Retrieves a payment link by ID to check its status.
- */
 export async function getPayMongoLink(linkId: string) {
   const res = await fetch(`${PAYMONGO_BASE}/links/${linkId}`, {
-    headers: { Authorization: authHeader() },
+    headers: { Authorization: await authHeader() },
   });
-  const json = await res.json();
-  return json.data;
+  return (await res.json()).data;
 }

@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
-import { verifyPayMongoWebhook } from "@/lib/paymongo";
+import { verifyPayMongoWebhookAsync } from "@/lib/paymongo";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const rawBody = await req.text();
   const sigHeader = req.headers.get("paymongo-signature") ?? "";
-  const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET!;
 
-  if (!verifyPayMongoWebhook(rawBody, sigHeader, webhookSecret)) {
+  const valid = await verifyPayMongoWebhookAsync(rawBody, sigHeader);
+  if (!valid) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const event = JSON.parse(rawBody);
   const eventType: string = event.data?.attributes?.type ?? "";
 
-  // payment_link.payment.paid fires when a payment link is paid
   if (eventType === "payment.paid" || eventType === "link.payment.paid") {
     const payment = event.data?.attributes?.data ?? event.data?.attributes;
     const remarks: string = payment?.attributes?.remarks ?? "{}";
@@ -27,10 +26,7 @@ export async function POST(req: Request) {
 
     await prisma.user.update({
       where: { id: userId },
-      data: {
-        plan: plan as any,
-        paymongoLinkId: payment?.id ?? null,
-      },
+      data: { plan: plan as any, paymongoLinkId: payment?.id ?? null },
     });
   }
 
