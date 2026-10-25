@@ -62,6 +62,16 @@ const API_GROUPS = [
     keys: [{ key: "OPENAI_API_KEY", label: "API Key", secret: true }],
   },
   {
+    label: "Grok (xAI)",
+    color: "#1a1a1a",
+    keys: [{ key: "GROK_API_KEY", label: "API Key", secret: true }],
+  },
+  {
+    label: "Gemini (Google)",
+    color: "#4285f4",
+    keys: [{ key: "GEMINI_API_KEY", label: "API Key", secret: true }],
+  },
+  {
     label: "Stripe",
     color: "#635bff",
     keys: [
@@ -187,6 +197,11 @@ export default function AdminSettingsPage() {
   const [restartMsg, setRestartMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [gateways, setGateways] = useState({ stripe: true, paymongo: true, xendit: true });
   const [gatewaySaving, setGatewaySaving] = useState(false);
+
+  // AI Provider state
+  const [aiProvider, setAiProvider] = useState("openai");
+  const [aiEnabled, setAiEnabled] = useState({ openai: true, grok: true, gemini: true });
+  const [aiProviderSaving, setAiProviderSaving] = useState(false);
 
   // PayMongo webhook manager state
   const [pmWebhooks, setPmWebhooks] = useState<any[]>([]);
@@ -363,7 +378,29 @@ export default function AdminSettingsPage() {
     setConfigMap(merged);
     const appUrl = merged["NEXTAUTH_URL"] || merged["NEXT_PUBLIC_APP_URL"] || "";
     if (appUrl) setPmWebhookUrl(`${appUrl.replace(/\/$/, "")}/api/paymongo/webhook`);
+    // Load AI provider settings
+    setAiProvider(merged["AI_PROVIDER"] || "openai");
+    setAiEnabled({
+      openai: merged["AI_OPENAI_ENABLED"] !== "false",
+      grok:   merged["AI_GROK_ENABLED"]   !== "false",
+      gemini: merged["AI_GEMINI_ENABLED"] !== "false",
+    });
     setApiLoading(false);
+  }
+
+  async function saveAiProvider(provider: string, enabled: typeof aiEnabled) {
+    setAiProviderSaving(true);
+    await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        AI_PROVIDER: provider,
+        AI_OPENAI_ENABLED: String(enabled.openai),
+        AI_GROK_ENABLED:   String(enabled.grok),
+        AI_GEMINI_ENABLED: String(enabled.gemini),
+      }),
+    });
+    setAiProviderSaving(false);
   }
 
   async function autoFillFromEnv() {
@@ -707,6 +744,66 @@ export default function AdminSettingsPage() {
       {/* ── API Keys Tab ── */}
       {tab === "api" && (
         <div className="space-y-6">
+          {/* AI Provider Selector */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+              <h2 className="text-white font-semibold">AI Provider</h2>
+              {aiProviderSaving && <span className="text-xs text-gray-500 ml-auto">Saving...</span>}
+            </div>
+            <p className="text-gray-500 text-xs mb-5">Choose which AI model powers your agents. Enable or disable providers and set the active one.</p>
+            <div className="space-y-3">
+              {([
+                { key: "openai",  label: "OpenAI",         model: "GPT-4o",           color: "#10a37f" },
+                { key: "grok",   label: "Grok (xAI)",     model: "grok-3",           color: "#ffffff" },
+                { key: "gemini", label: "Gemini (Google)", model: "gemini-2.0-flash", color: "#4285f4" },
+              ] as { key: keyof typeof aiEnabled; label: string; model: string; color: string }[]).map(({ key, label, model, color }) => (
+                <div key={key} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+                  aiProvider === key ? "bg-gray-800 border-gray-600" : "bg-gray-800/50 border-gray-800"
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+                    <div>
+                      <p className="text-sm font-medium text-white">{label}</p>
+                      <p className="text-xs text-gray-500">{model}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {/* Active radio */}
+                    <button
+                      onClick={() => {
+                        setAiProvider(key);
+                        saveAiProvider(key, aiEnabled);
+                      }}
+                      className={`text-xs px-3 py-1 rounded-full font-semibold border transition-all ${
+                        aiProvider === key
+                          ? "bg-purple-600 border-purple-500 text-white"
+                          : "bg-transparent border-gray-600 text-gray-400 hover:border-gray-400"
+                      }`}
+                    >
+                      {aiProvider === key ? "Active" : "Set Active"}
+                    </button>
+                    {/* Enable toggle */}
+                    <button
+                      onClick={() => {
+                        const updated = { ...aiEnabled, [key]: !aiEnabled[key] };
+                        setAiEnabled(updated);
+                        saveAiProvider(aiProvider, updated);
+                      }}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        aiEnabled[key] ? "bg-green-500" : "bg-gray-600"
+                      }`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        aiEnabled[key] ? "translate-x-5" : "translate-x-0"
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Payment Gateway Toggles */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-1">

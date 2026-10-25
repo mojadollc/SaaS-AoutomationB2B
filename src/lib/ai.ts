@@ -1,5 +1,6 @@
 import OpenAI from "openai";
-import { getSetting } from "@/lib/settings";
+import { GoogleGenAI } from "@google/genai";
+import { getSetting, getSettings } from "@/lib/settings";
 
 export const AGENT_PROMPTS: Record<string, string> = {
   CUSTOMER_SUPPORT: `You are a helpful customer support agent. Answer questions clearly and concisely. 
@@ -25,27 +26,70 @@ ORDER_JSON:{"contact":"name","items":[{"name":"item","quantity":1,"price":0}],"n
 Be friendly, clear, and confirm each item before moving on.`,
 };
 
-async function getOpenAIClient() {
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
+async function runOpenAI(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
   const apiKey = await getSetting("OPENAI_API_KEY");
   if (!apiKey) throw new Error("OpenAI API key not configured. Add it in Admin → Settings → API Keys.");
-  return new OpenAI({ apiKey });
+  const client = new OpenAI({ apiKey });
+  const res = await client.chat.completions.create({
+    model: "gpt-4o",
+    messages: [{ role: "system", content: systemPrompt }, ...messages],
+    max_tokens: 500,
+    temperature: 0.7,
+  });
+  return res.choices[0].message.content ?? "";
+}
+
+async function runGrok(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
+  const apiKey = await getSetting("GROK_API_KEY");
+  if (!apiKey) throw new Error("Grok API key not configured. Add it in Admin → Settings → API Keys.");
+  const client = new OpenAI({ apiKey, baseURL: "https://api.x.ai/v1" });
+  const res = await client.chat.completions.create({
+    model: "grok-3",
+    messages: [{ role: "system", content: systemPrompt }, ...messages],
+    max_tokens: 500,
+    temperature: 0.7,
+  });
+  return res.choices[0].message.content ?? "";
+}
+
+async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
+  const apiKey = await getSetting("GEMINI_API_KEY");
+  if (!apiKey) throw new Error("Gemini API key not configured. Add it in Admin → Settings → API Keys.");
+  const client = new GoogleGenAI({ apiKey });
+  const history = messages.slice(0, -1).map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+  const lastMessage = messages[messages.length - 1].content;
+  const chat = client.chats.create({
+    model: "gemini-2.0-flash",
+    config: { systemInstruction: systemPrompt, maxOutputTokens: 500, temperature: 0.7 },
+    history,
+  });
+  const res = await chat.sendMessage({ message: lastMessage });
+  return res.text ?? "";
 }
 
 export async function runAgent(
   agentType: string,
   systemPrompt: string,
-  messages: { role: "user" | "assistant"; content: string }[]
+  messages: ChatMessage[]
 ) {
-  const client = await getOpenAIClient();
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt || AGENT_PROMPTS[agentType] },
-      ...messages,
-    ],
-    max_tokens: 500,
-    temperature: 0.7,
-  });
+  const settings = await getSettings(["AI_PROVIDER", "AI_OPENAI_ENABLED", "AI_GROK_ENABLED", "AI_GEMINI_ENABLED"]);
+  const provider = settings["AI_PROVIDER"] || "openai";
+  const prompt = systemPrompt || AGENT_PROMPTS[agentType];
 
-  return response.choices[0].message.content ?? "";
+  switch (provider) {
+    case "grok":
+      if (settings["AI_GROK_ENABLED"] === "false") throw new Error("Grok is disabled.");
+      return runGrok(prompt, messages);
+    case "gemini":
+      if (settings["AI_GEMINI_ENABLED"] === "false") throw new Error("Gemini is disabled.");
+      return runGemini(prompt, messages);
+    default:
+      if (settings["AI_OPENAI_ENABLED"] === "false") throw new Error("OpenAI is disabled.");
+      return runOpenAI(prompt, messages);
+  }
 }
