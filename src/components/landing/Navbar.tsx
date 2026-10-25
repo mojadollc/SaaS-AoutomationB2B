@@ -8,6 +8,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <span className="font-bold text-lg tracking-tight text-white">Aurex</span>
+          <span className="block text-[10px] text-white/30 tracking-wide -mt-0.5">AI Agentsflow</span>
         </Link>
 
         {/* Nav links */}

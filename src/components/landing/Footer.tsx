@@ -56,6 +56,7 @@ export default function Footer() {
             <div className="md:col-span-2">
               <div className="mb-4">
                 <span className="font-bold text-white text-lg">Aurex</span>
+                <span className="block text-[10px] text-white/30 tracking-wide mt-0.5">AI Agentsflow</span>
               </div>
               <p className="text-white/25 text-sm leading-relaxed max-w-xs">
                 AI agents that automate your business — 24/7, across every channel.
