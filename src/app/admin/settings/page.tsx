@@ -202,6 +202,8 @@ export default function AdminSettingsPage() {
   const [aiProvider, setAiProvider] = useState("openai");
   const [aiEnabled, setAiEnabled] = useState({ openai: true, grok: true, gemini: true });
   const [aiProviderSaving, setAiProviderSaving] = useState(false);
+  const [aiBalances, setAiBalances] = useState<Record<string, { balance: string | null; total?: string; used?: string; note?: string; plan?: string; error: string | null }>>({});
+  const [aiBalanceLoading, setAiBalanceLoading] = useState(false);
 
   // PayMongo webhook manager state
   const [pmWebhooks, setPmWebhooks] = useState<any[]>([]);
@@ -286,9 +288,18 @@ export default function AdminSettingsPage() {
   useEffect(() => { setTheme(loadTheme()); }, []);
 
   useEffect(() => {
-    if (tab === "api") { loadApiKeys(); loadGateways(); loadPmWebhooks(); }
+    if (tab === "api") { loadApiKeys(); loadGateways(); loadPmWebhooks(); fetchAiBalances(); }
     if (tab === "pricing") { loadPlans(); }
   }, [tab]);
+
+  async function fetchAiBalances() {
+    setAiBalanceLoading(true);
+    try {
+      const res = await fetch("/api/admin/ai-balance");
+      if (res.ok) setAiBalances(await res.json());
+    } catch { /* ignore */ }
+    setAiBalanceLoading(false);
+  }
 
   async function loadPlans() {
     const res = await fetch("/api/admin/pricing");
@@ -749,7 +760,10 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
               <h2 className="text-white font-semibold">AI Provider</h2>
-              {aiProviderSaving && <span className="text-xs text-gray-500 ml-auto">Saving...</span>}
+              <button onClick={fetchAiBalances} className="ml-auto p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors" title="Refresh balances">
+                <RefreshCw className={`w-3.5 h-3.5 ${aiBalanceLoading ? "animate-spin" : ""}`} />
+              </button>
+              {aiProviderSaving && <span className="text-xs text-gray-500">Saving...</span>}
             </div>
             <p className="text-gray-500 text-xs mb-5">Choose which AI model powers your agents. Enable or disable providers and set the active one.</p>
             <div className="space-y-3">
@@ -757,10 +771,13 @@ export default function AdminSettingsPage() {
                 { key: "openai",  label: "OpenAI",         model: "GPT-4o",           color: "#10a37f" },
                 { key: "grok",   label: "Grok (xAI)",     model: "grok-3",           color: "#ffffff" },
                 { key: "gemini", label: "Gemini (Google)", model: "gemini-2.0-flash", color: "#4285f4" },
-              ] as { key: keyof typeof aiEnabled; label: string; model: string; color: string }[]).map(({ key, label, model, color }) => (
-                <div key={key} className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+              ] as { key: keyof typeof aiEnabled; label: string; model: string; color: string }[]).map(({ key, label, model, color }) => {
+                const bal = aiBalances[key];
+                return (
+                <div key={key} className={`rounded-xl border transition-all ${
                   aiProvider === key ? "bg-gray-800 border-gray-600" : "bg-gray-800/50 border-gray-800"
                 }`}>
+                  <div className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full" style={{ background: color }} />
                     <div>
@@ -799,8 +816,32 @@ export default function AdminSettingsPage() {
                       }`} />
                     </button>
                   </div>
+                  </div>
+                  {/* Balance row */}
+                  {bal && (
+                    <div className="px-4 pb-3 flex items-center gap-2">
+                      {bal.error ? (
+                        <span className="text-xs text-red-400">⚠ {bal.error}</span>
+                      ) : bal.balance !== null ? (
+                        <>
+                          <span className="text-xs text-gray-400">Credits remaining:</span>
+                          <span className="text-xs font-semibold text-green-400">${bal.balance}</span>
+                          {bal.used && <span className="text-xs text-gray-600">· used ${bal.used} of ${bal.total}</span>}
+                        </>
+                      ) : bal.plan ? (
+                        <span className="text-xs text-gray-400">Plan: <span className="text-white">{bal.plan}</span></span>
+                      ) : (
+                        <span className="text-xs text-gray-500">{bal.note}</span>
+                      )}
+                      {aiBalanceLoading && !bal && <span className="text-xs text-gray-600">Checking...</span>}
+                    </div>
+                  )}
+                  {!bal && aiBalanceLoading && (
+                    <div className="px-4 pb-3"><span className="text-xs text-gray-600">Checking balance...</span></div>
+                  )}
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
 
