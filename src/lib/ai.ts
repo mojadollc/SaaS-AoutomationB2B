@@ -67,13 +67,13 @@ async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise
   };
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
   );
 
   const json = await res.json();
   if (!res.ok) {
-    throw new Error(json?.error?.message ?? `Gemini error ${res.status}`);
+    throw new Error(json?.error?.message ?? `Gemini error ${res.status}: ${JSON.stringify(json)}`);
   }
   return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
