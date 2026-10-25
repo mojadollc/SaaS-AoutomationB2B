@@ -195,12 +195,20 @@ export default function AdminSettingsPage() {
 
   async function togglePmWebhook(id: string, status: string) {
     const action = status === "enabled" ? "disable" : "enable";
-    await fetch(`/api/admin/paymongo/webhook/${id}`, {
+    setPmWebhookMsg(null);
+    const res = await fetch(`/api/admin/paymongo/webhook/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action }),
     });
-    loadPmWebhooks();
+    const data = await res.json();
+    if (!res.ok) {
+      setPmWebhookMsg({ ok: false, text: data.error ?? `Failed to ${action} webhook` });
+    } else {
+      setPmWebhooks((prev) =>
+        prev.map((wh) => (wh.id === id ? { ...wh, status: data.status } : wh))
+      );
+    }
   }
 
   function copyWebhookUrl(url: string) {
