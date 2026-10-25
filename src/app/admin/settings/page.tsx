@@ -119,6 +119,32 @@ const API_GROUPS = [
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
+function ApiKeyInput({ value, onChange, isSecret, isRevealed, onToggle }: {
+  value: string;
+  onChange: (v: string) => void;
+  isSecret: boolean;
+  isRevealed: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type={isSecret && !isRevealed ? "password" : "text"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete="off"
+        data-form-type="other"
+        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500 font-mono"
+      />
+      {isSecret && (
+        <button onClick={onToggle} className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+          {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
   const [tab, setTab] = useState<"appearance" | "api">("appearance");
 
@@ -710,23 +736,13 @@ export default function AdminSettingsPage() {
                 {group.keys.map(({ key, label, secret }) => (
                   <div key={key}>
                     <label className="text-xs text-gray-400 mb-1 block">{label}</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type={secret && !revealed[key] ? "password" : "text"}
-                        value={apiValues[key] ?? ""}
-                        onChange={(e) => setApiValues((v) => ({ ...v, [key]: e.target.value }))}
-                        placeholder={secret ? "••••••••••••••••" : `${label}...`}
-                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500 font-mono"
-                      />
-                      {secret && (
-                        <button
-                          onClick={() => setRevealed((r) => ({ ...r, [key]: !r[key] }))}
-                          className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors"
-                        >
-                          {revealed[key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      )}
-                    </div>
+                    <ApiKeyInput
+                      value={apiValues[key] ?? ""}
+                      onChange={(v) => setApiValues((prev) => ({ ...prev, [key]: v }))}
+                      isSecret={secret}
+                      isRevealed={!!revealed[key]}
+                      onToggle={() => setRevealed((r) => ({ ...r, [key]: !r[key] }))}
+                    />
                   </div>
                 ))}
               </div>
