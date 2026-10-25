@@ -4,13 +4,17 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle, Zap, CreditCard, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { PLAN_PRICES_USD, PLAN_PRICES_PHP, PLAN_FEATURES } from "@/lib/plans";
 
-const PLANS = [
-  { key: "FREE",    name: "Free",    highlight: false },
-  { key: "STARTER", name: "Starter", highlight: false },
-  { key: "PRO",     name: "Pro",     highlight: true  },
-  { key: "AGENCY",  name: "Agency",  highlight: false },
+type PricingPlan = {
+  key: string; name: string; priceUSD: number; pricePHP: number;
+  desc: string; features: string[]; cta: string; href: string; highlight: boolean;
+};
+
+const DEFAULT_PLANS: PricingPlan[] = [
+  { key: "FREE",    name: "Free",    priceUSD: 0,   pricePHP: 0,     desc: "", features: ["1 AI Agent", "50 conversations/mo", "Email support"],                                     cta: "", href: "", highlight: false },
+  { key: "STARTER", name: "Starter", priceUSD: 29,  pricePHP: 1650,  desc: "", features: ["3 AI Agents", "500 conversations/mo", "Priority support", "Analytics"],                  cta: "", href: "", highlight: false },
+  { key: "PRO",     name: "Pro",     priceUSD: 99,  pricePHP: 5600,  desc: "", features: ["10 AI Agents", "5,000 conversations/mo", "Custom prompts", "Webhooks", "API access"],    cta: "", href: "", highlight: true  },
+  { key: "AGENCY",  name: "Agency",  priceUSD: 299, pricePHP: 16800, desc: "", features: ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support"],       cta: "", href: "", highlight: false },
 ];
 
 type Currency = "USD" | "PHP";
@@ -38,6 +42,7 @@ export default function BillingPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [gatewayError, setGatewayError] = useState("");
   const [enabledGateways, setEnabledGateways] = useState({ stripe: true, paymongo: true, xendit: true });
+  const [plans, setPlans] = useState<PricingPlan[]>(DEFAULT_PLANS);
 
   useEffect(() => {
     fetch("/api/user/me").then((r) => r.json()).then((u) => {
@@ -45,13 +50,14 @@ export default function BillingPage() {
     });
     fetch("/api/payments").then((r) => r.json()).then((g) => {
       setEnabledGateways(g);
-      // auto-select first enabled method
       const first = PAYMENT_METHODS.find((m) => g[m.id]);
       if (first) { setPaymentMethod(first.id); setCurrency(first.currencies[0] as Currency); }
     }).catch(() => {});
+    fetch("/api/admin/pricing").then((r) => r.ok ? r.json() : null).then((data) => {
+      if (data) setPlans(data);
+    }).catch(() => {});
     if (searchParams.get("upgraded") === "true") {
       setShowSuccess(true);
-      // Remove query param from URL without reload
       window.history.replaceState({}, "", "/dashboard/billing");
     }
   }, [searchParams]);
@@ -111,17 +117,27 @@ export default function BillingPage() {
   }
 
   function formatPrice(planKey: string) {
+    const plan = plans.find((p) => p.key === planKey);
+    if (!plan) return "";
     if (planKey === "FREE") return currency === "USD" ? "$0" : "₱0";
-    if (currency === "USD") return `$${PLAN_PRICES_USD[planKey]}`;
-    return `₱${PLAN_PRICES_PHP[planKey].toLocaleString()}`;
+    if (currency === "USD") return `$${plan.priceUSD}`;
+    return `₱${plan.pricePHP.toLocaleString()}`;
+  }
+
+  function getAltPrice(planKey: string) {
+    const plan = plans.find((p) => p.key === planKey);
+    if (!plan || planKey === "FREE") return null;
+    return currency === "PHP"
+      ? `≈ $${plan.priceUSD} USD`
+      : `≈ ₱${plan.pricePHP.toLocaleString()} PHP`;
   }
 
   function getButtonLabel(planKey: string) {
     if (planKey === currentPlan) return "Current Plan";
     if (planKey === "FREE") return "Downgrade to Free";
     const via = paymentMethod === "stripe" ? "Stripe" : paymentMethod === "paymongo" ? "PayMongo" : "Xendit";
-    const planIndex = PLANS.findIndex((p) => p.key === planKey);
-    const currentIndex = PLANS.findIndex((p) => p.key === currentPlan);
+    const planIndex = plans.findIndex((p) => p.key === planKey);
+    const currentIndex = plans.findIndex((p) => p.key === currentPlan);
     return planIndex > currentIndex ? `Upgrade via ${via}` : `Switch via ${via}`;
   }
 
@@ -246,7 +262,7 @@ export default function BillingPage() {
 
       {/* Plan cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {PLANS.map((plan) => {
+        {plans.map((plan) => {
           const isCurrentPlan = plan.key === currentPlan;
           return (
             <Card
@@ -275,17 +291,13 @@ export default function BillingPage() {
                   <span className="text-3xl font-bold text-gray-900">{formatPrice(plan.key)}</span>
                   <span className="text-gray-500 text-sm">/mo</span>
                 </div>
-                {plan.key !== "FREE" && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {currency === "PHP"
-                      ? `≈ $${PLAN_PRICES_USD[plan.key]} USD`
-                      : `≈ ₱${PLAN_PRICES_PHP[plan.key].toLocaleString()} PHP`}
-                  </p>
+                {getAltPrice(plan.key) && (
+                  <p className="text-xs text-gray-400 mt-0.5">{getAltPrice(plan.key)}</p>
                 )}
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 mb-6">
-                  {(PLAN_FEATURES[plan.key as keyof typeof PLAN_FEATURES] ?? []).map((f) => (
+                  {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
                       <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
                       {f}
