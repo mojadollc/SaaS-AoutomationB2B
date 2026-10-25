@@ -1,9 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 
-const plans = [
+type Plan = {
+  key: string;
+  name: string;
+  priceUSD: number;
+  pricePHP: number;
+  desc: string;
+  features: string[];
+  cta: string;
+  href: string;
+  highlight: boolean;
+};
+
+const DEFAULT_PLANS: Plan[] = [
   {
     key: "FREE", name: "Free",
     priceUSD: 0, pricePHP: 0,
@@ -36,6 +48,14 @@ const plans = [
 
 export default function Pricing() {
   const [currency, setCurrency] = useState<"USD" | "PHP">("USD");
+  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
+
+  useEffect(() => {
+    fetch("/api/admin/pricing")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setPlans(data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="pricing" className="py-32 bg-white">
@@ -50,7 +70,6 @@ export default function Pricing() {
               <span className="gradient-text">Scale as you grow.</span>
             </h2>
           </div>
-          {/* Currency toggle */}
           <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-start md:self-auto">
             {(["USD", "PHP"] as const).map((c) => (
               <button key={c} onClick={() => setCurrency(c)}
@@ -99,7 +118,6 @@ export default function Pricing() {
                 )}
               </div>
 
-              {/* Gold divider */}
               <div className={`h-px mb-6 ${plan.highlight ? "bg-white/10" : "bg-[#e8c97a]/30"}`} />
 
               <ul className="space-y-3 mb-8 flex-1">

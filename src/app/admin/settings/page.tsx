@@ -1,7 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw, Power, Webhook, Plus, ToggleLeft, ToggleRight, Copy, ExternalLink } from "lucide-react";
+import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw, Power, Webhook, Plus, ToggleLeft, ToggleRight, Copy, ExternalLink, Trash2 } from "lucide-react";
 import { applyTheme, loadTheme, saveTheme, THEME_DEFAULTS, AdminTheme } from "@/components/admin/ThemeProvider";
+
+type PricingPlan = {
+  key: string; name: string; priceUSD: number; pricePHP: number;
+  desc: string; features: string[]; cta: string; href: string; highlight: boolean;
+};
+
+const DEFAULT_PLANS: PricingPlan[] = [
+  { key: "FREE",    name: "Free",    priceUSD: 0,   pricePHP: 0,     desc: "Perfect for trying out Aurex.",              features: ["1 AI Agent", "50 conversations/mo", "Web widget", "Email support"],                                          cta: "Get Started Free",  href: "/register",             highlight: false },
+  { key: "STARTER", name: "Starter", priceUSD: 29,  pricePHP: 1650,  desc: "For small businesses getting started.",       features: ["3 AI Agents", "500 conversations/mo", "All channels", "Priority support", "Analytics"],                        cta: "Start Free Trial",  href: "/register?plan=STARTER", highlight: false },
+  { key: "PRO",     name: "Pro",     priceUSD: 99,  pricePHP: 5600,  desc: "For growing businesses that need more.",      features: ["10 AI Agents", "5,000 conversations/mo", "All channels", "Custom prompts", "Webhooks", "API access"],          cta: "Start Free Trial",  href: "/register?plan=PRO",    highlight: true  },
+  { key: "AGENCY",  name: "Agency",  priceUSD: 299, pricePHP: 16800, desc: "For agencies managing multiple clients.",      features: ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support", "Custom integrations"],      cta: "Contact Sales",     href: "/register?plan=AGENCY", highlight: false },
+];
 
 // ─── Appearance data ───────────────────────────────────────────────────────────
 const NAVBAR_PRESETS = [
@@ -146,7 +158,12 @@ function ApiKeyInput({ value, onChange, isSecret, isRevealed, onToggle }: {
 }
 
 export default function AdminSettingsPage() {
-  const [tab, setTab] = useState<"appearance" | "api">("appearance");
+  const [tab, setTab] = useState<"appearance" | "api" | "pricing">("appearance");
+
+  // Pricing state
+  const [plans, setPlans] = useState<PricingPlan[]>(DEFAULT_PLANS);
+  const [pricingSaving, setPricingSaving] = useState(false);
+  const [pricingSaved, setPricingSaved] = useState(false);
 
   // Appearance state
   const [theme, setTheme] = useState<Partial<AdminTheme>>({});
@@ -247,7 +264,47 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     if (tab === "api") { loadApiKeys(); loadGateways(); loadPmWebhooks(); }
+    if (tab === "pricing") { loadPlans(); }
   }, [tab]);
+
+  async function loadPlans() {
+    const res = await fetch("/api/admin/pricing");
+    if (res.ok) { const data = await res.json(); if (data) setPlans(data); }
+  }
+
+  async function savePlans() {
+    setPricingSaving(true);
+    await fetch("/api/admin/pricing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plans),
+    });
+    setPricingSaving(false);
+    setPricingSaved(true);
+    setTimeout(() => setPricingSaved(false), 2000);
+  }
+
+  function updatePlan(i: number, patch: Partial<PricingPlan>) {
+    setPlans((prev) => prev.map((p, idx) => idx === i ? { ...p, ...patch } : p));
+  }
+
+  function updateFeature(planIdx: number, featIdx: number, val: string) {
+    setPlans((prev) => prev.map((p, i) => i === planIdx
+      ? { ...p, features: p.features.map((f, j) => j === featIdx ? val : f) }
+      : p
+    ));
+  }
+
+  function addFeature(planIdx: number) {
+    setPlans((prev) => prev.map((p, i) => i === planIdx ? { ...p, features: [...p.features, ""] } : p));
+  }
+
+  function removeFeature(planIdx: number, featIdx: number) {
+    setPlans((prev) => prev.map((p, i) => i === planIdx
+      ? { ...p, features: p.features.filter((_, j) => j !== featIdx) }
+      : p
+    ));
+  }
 
   async function loadGateways() {
     const res = await fetch("/api/payments");
@@ -365,7 +422,7 @@ export default function AdminSettingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 mb-8 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
-        {(["appearance", "api"] as const).map((t) => (
+        {(["appearance", "api", "pricing"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -375,7 +432,7 @@ export default function AdminSettingsPage() {
               color: tab === t ? "#fff" : "#6b7280",
             }}
           >
-            {t === "appearance" ? "Appearance" : "API Keys"}
+            {t === "appearance" ? "Appearance" : t === "api" ? "API Keys" : "Pricing"}
           </button>
         ))}
       </div>
@@ -532,6 +589,91 @@ export default function AdminSettingsPage() {
               <RotateCcw className="w-4 h-4" /> Reset to Default
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ── Pricing Tab ── */}
+      {tab === "pricing" && (
+        <div className="space-y-6">
+          <p className="text-gray-400 text-sm">Edit plan names, prices, features, and CTA buttons. Changes reflect live on the landing page.</p>
+          {plans.map((plan, i) => (
+            <div key={plan.key} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-semibold">{plan.name} Plan</h2>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs text-gray-400">Most Popular</span>
+                  <button
+                    onClick={() => setPlans((prev) => prev.map((p, idx) => ({ ...p, highlight: idx === i })))}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${plan.highlight ? "bg-amber-500" : "bg-gray-600"}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${plan.highlight ? "translate-x-5" : "translate-x-0"}`} />
+                  </button>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Plan Name</label>
+                  <input value={plan.name} onChange={(e) => updatePlan(i, { name: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Description</label>
+                  <input value={plan.desc} onChange={(e) => updatePlan(i, { desc: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Price (USD) /mo</label>
+                  <input type="number" min={0} value={plan.priceUSD} onChange={(e) => updatePlan(i, { priceUSD: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">Price (PHP) /mo</label>
+                  <input type="number" min={0} value={plan.pricePHP} onChange={(e) => updatePlan(i, { pricePHP: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">CTA Button Text</label>
+                  <input value={plan.cta} onChange={(e) => updatePlan(i, { cta: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 mb-1 block">CTA Link</label>
+                  <input value={plan.href} onChange={(e) => updatePlan(i, { href: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-gray-400">Features</label>
+                  <button onClick={() => addFeature(i)} className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300">
+                    <Plus className="w-3 h-3" /> Add feature
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {plan.features.map((f, j) => (
+                    <div key={j} className="flex items-center gap-2">
+                      <input value={f} onChange={(e) => updateFeature(i, j, e.target.value)}
+                        className="flex-1 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-1 focus:ring-gray-500" />
+                      <button onClick={() => removeFeature(i, j)} className="p-1.5 text-gray-600 hover:text-red-400 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={savePlans}
+            disabled={pricingSaving}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
+            style={{ background: current.primaryColor, color: "#fff" }}
+          >
+            {pricingSaved ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Pricing</>}
+          </button>
         </div>
       )}
 
