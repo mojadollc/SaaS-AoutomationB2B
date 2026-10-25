@@ -15,6 +15,7 @@ function verifyTwilioSignature(req: Request, body: string): boolean {
     .map(([k, v]) => k + v)
     .join("");
 
+  // SHA1 is required by Twilio's signature verification spec — cannot be changed
   const computed = crypto
     .createHmac("sha1", authToken)
     .update(url + sortedParams)

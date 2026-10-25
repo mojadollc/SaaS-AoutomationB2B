@@ -16,10 +16,9 @@ export async function GET(req: Request) {
   const verifyToken = await getSetting("MESSENGER_VERIFY_TOKEN");
   if (!verifyToken || !token) return new Response("Forbidden", { status: 403 });
 
-  const tokensMatch = crypto.timingSafeEqual(
-    Buffer.from(token),
-    Buffer.from(verifyToken)
-  );
+  const a = Buffer.from(token);
+  const b = Buffer.from(verifyToken);
+  const tokensMatch = a.length === b.length && crypto.timingSafeEqual(a, b);
 
   if (mode === "subscribe" && tokensMatch) {
     return new Response(challenge, { status: 200 });

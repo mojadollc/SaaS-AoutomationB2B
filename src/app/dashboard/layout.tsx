@@ -30,6 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/" className="font-bold text-amber-600">
             Aurex
           </Link>
+          <p className="text-xs text-gray-400 mt-0.5">your AI agentflow</p>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
