@@ -34,6 +34,17 @@ const SIDEBAR_PRESETS = [
 // ─── API key groups ────────────────────────────────────────────────────────────
 const API_GROUPS = [
   {
+    label: "System",
+    color: "#ef4444",
+    warning: "Changing these requires a server restart to take effect.",
+    keys: [
+      { key: "NEXTAUTH_URL", label: "App URL (NEXTAUTH_URL)", secret: false },
+      { key: "NEXT_PUBLIC_APP_URL", label: "Public App URL", secret: false },
+      { key: "NEXTAUTH_SECRET", label: "NextAuth Secret", secret: true },
+      { key: "DATABASE_URL", label: "Database URL", secret: true },
+    ],
+  },
+  {
     label: "OpenAI",
     color: "#10a37f",
     keys: [{ key: "OPENAI_API_KEY", label: "API Key", secret: true }],
@@ -358,10 +369,15 @@ export default function AdminSettingsPage() {
 
           {API_GROUPS.map((group) => (
             <div key={group.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: group.color }} />
                 <h2 className="text-white font-semibold">{group.label}</h2>
               </div>
+              {(group as any).warning && (
+                <div className="mb-4 px-3 py-2 rounded-lg text-xs text-red-300 bg-red-950 border border-red-800">
+                  ⚠️ {(group as any).warning}
+                </div>
+              )}
               <div className="space-y-3">
                 {group.keys.map(({ key, label, secret }) => (
                   <div key={key}>

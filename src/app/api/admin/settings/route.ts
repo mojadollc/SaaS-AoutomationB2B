@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const ALLOWED_KEYS = [
+  "DATABASE_URL",
+  "NEXTAUTH_URL",
+  "NEXTAUTH_SECRET",
+  "NEXT_PUBLIC_APP_URL",
   "OPENAI_API_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
