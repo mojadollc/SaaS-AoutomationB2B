@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { GoogleGenAI } from "@google/genai";
 import { getSetting, getSettings } from "@/lib/settings";
 
 export const AGENT_PROMPTS: Record<string, string> = {
@@ -57,19 +56,18 @@ async function runGrok(systemPrompt: string, messages: ChatMessage[]): Promise<s
 async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
   const apiKey = await getSetting("GEMINI_API_KEY");
   if (!apiKey) throw new Error("Gemini API key not configured. Add it in Admin → Settings → API Keys.");
-  const client = new GoogleGenAI({ apiKey });
-  const history = messages.slice(0, -1).map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-  const lastMessage = messages[messages.length - 1].content;
-  const chat = client.chats.create({
-    model: "gemini-2.0-flash",
-    config: { systemInstruction: systemPrompt, maxOutputTokens: 500, temperature: 0.7 },
-    history,
+  // Gemini supports OpenAI-compatible API — no extra SDK needed
+  const client = new OpenAI({
+    apiKey,
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
   });
-  const res = await chat.sendMessage({ message: lastMessage });
-  return res.text ?? "";
+  const res = await client.chat.completions.create({
+    model: "gemini-2.0-flash",
+    messages: [{ role: "system", content: systemPrompt }, ...messages],
+    max_tokens: 500,
+    temperature: 0.7,
+  });
+  return res.choices[0].message.content ?? "";
 }
 
 export async function runAgent(
