@@ -1,11 +1,12 @@
-import { PrismaClient } from "@prisma/client/edge";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-  return new PrismaClient({ adapter, log: ["error"] });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new (PrismaClient as any)({ adapter, log: ["error"] });
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
