@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { LayoutDashboard, MessageSquare, Bot, CreditCard, LogOut, Plug, Key, ShoppingCart, Package, Shield, LayoutTemplate } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Bot, CreditCard, LogOut, Plug, Key, ShoppingCart, Package, Shield, LayoutTemplate, BookOpen } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/dashboard/products", icon: Package, label: "Products" },
   { href: "/dashboard/integrations", icon: Plug, label: "Integrations" },
   { href: "/dashboard/keys", icon: Key, label: "API Keys" },
+  { href: "/dashboard/docs", icon: BookOpen, label: "API Docs" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
 ];
 
