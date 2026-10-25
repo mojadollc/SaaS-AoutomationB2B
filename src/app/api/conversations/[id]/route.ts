@@ -45,11 +45,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }));
   history.push({ role: "user", content: parsed.data.message });
 
-  const aiReply = await runAgent(
-    conversation.agent.type,
-    conversation.agent.systemPrompt || AGENT_PROMPTS[conversation.agent.type],
-    history
-  );
+  let aiReply: string;
+  try {
+    aiReply = await runAgent(
+      conversation.agent.type,
+      conversation.agent.systemPrompt || AGENT_PROMPTS[conversation.agent.type],
+      history
+    );
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message ?? "AI provider error" }, { status: 502 });
+  }
 
   const aiMessage = await prisma.message.create({
     data: { conversationId: id, role: "assistant", content: aiReply },

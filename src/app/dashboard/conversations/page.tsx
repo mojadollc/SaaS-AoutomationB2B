@@ -110,7 +110,7 @@ export default function ConversationsPage() {
       });
       setMessage(optimisticMsg.content);
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Failed to send. Check your OpenAI API key in Admin → Settings.");
+      setError(data.error || "Failed to send. AI provider error — check your API keys in Admin → Settings.");
     }
   }
 
