@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       { role: "user", content: message },
     ]);
   } catch (err: any) {
-    const msg = err?.error?.message ?? err?.message ?? String(err);
+    const msg = err?.error?.message ?? err?.error ?? err?.message ?? String(err);
     console.error("[runAgent error]", msg, err);
     return NextResponse.json({ error: msg }, { status: 502 });
   }
