@@ -139,7 +139,7 @@ export default function AdminSettingsPage() {
 
   // PayMongo webhook manager state
   const [pmWebhooks, setPmWebhooks] = useState<any[]>([]);
-  const [pmWebhookUrl, setPmWebhookUrl] = useState("");
+  const [pmWebhookUrl, setPmWebhookUrl] = useState("https://aurex.payroo.xyz/api/paymongo/webhook");
   const [pmWebhookLoading, setPmWebhookLoading] = useState(false);
   const [pmWebhookCreating, setPmWebhookCreating] = useState(false);
   const [pmWebhookMsg, setPmWebhookMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -251,7 +251,12 @@ export default function AdminSettingsPage() {
   async function loadApiKeys() {
     setApiLoading(true);
     const res = await fetch("/api/admin/settings");
-    if (res.ok) setApiValues(await res.json());
+    if (res.ok) {
+      const vals = await res.json();
+      setApiValues(vals);
+      const appUrl = vals["NEXTAUTH_URL"] || vals["NEXT_PUBLIC_APP_URL"] || "";
+      if (appUrl) setPmWebhookUrl(`${appUrl.replace(/\/$/, "")}/api/paymongo/webhook`);
+    }
     setApiLoading(false);
   }
 
@@ -558,10 +563,10 @@ export default function AdminSettingsPage() {
               <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Your Webhook Receiver URL</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-xs text-blue-300 font-mono bg-gray-900 px-3 py-2 rounded-lg truncate">
-                  {(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com")}/api/paymongo/webhook
+                  https://aurex.payroo.xyz/api/paymongo/webhook
                 </code>
                 <button
-                  onClick={() => copyWebhookUrl(`${apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com"}/api/paymongo/webhook`)}
+                  onClick={() => copyWebhookUrl("https://aurex.payroo.xyz/api/paymongo/webhook")}
                   className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors shrink-0"
                   title="Copy URL"
                 >
