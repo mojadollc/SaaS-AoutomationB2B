@@ -58,16 +58,19 @@ async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise
   if (!apiKey) throw new Error("Gemini API key not configured. Add it in Admin → Settings → API Keys.");
 
   const body = {
-    system_instruction: { parts: [{ text: systemPrompt }] },
-    contents: messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    })),
+    contents: [
+      { role: "user", parts: [{ text: `[System]: ${systemPrompt}` }] },
+      { role: "model", parts: [{ text: "Understood. I will follow those instructions." }] },
+      ...messages.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+    ],
     generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
   };
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
   );
 
