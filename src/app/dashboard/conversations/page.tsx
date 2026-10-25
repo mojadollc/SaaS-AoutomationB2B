@@ -28,33 +28,60 @@ function FormattedMessage({ content }: { content: string }) {
   function flushList() {
     if (listItems.length === 0) return;
     elements.push(
-      <ul key={elements.length} className="mt-1.5 mb-1.5 space-y-1">
-        {listItems.map((item, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
-            <span>{formatInline(item)}</span>
-          </li>
-        ))}
+      <ul key={elements.length} className="mt-2 mb-2 space-y-1.5">
+        {listItems.map((item, i) => {
+          // Labeled bullet: **Label:** value
+          const labelMatch = item.match(/^\*\*(.+?):\*\*\s*(.*)/);
+          if (labelMatch) {
+            return (
+              <li key={i} className="flex gap-2">
+                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                <span><span className="font-semibold text-gray-900">{labelMatch[1]}:</span>{" "}<span className="text-gray-700">{formatInline(labelMatch[2])}</span></span>
+              </li>
+            );
+          }
+          return (
+            <li key={i} className="flex gap-2">
+              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+              <span>{formatInline(item)}</span>
+            </li>
+          );
+        })}
       </ul>
     );
     listItems = [];
   }
 
   function formatInline(text: string): React.ReactNode {
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
-    return parts.map((p, i) =>
-      p.startsWith("**") && p.endsWith("**")
-        ? <strong key={i} className="font-semibold">{p.slice(2, -2)}</strong>
-        : p
-    );
+    // Split on **bold**, prices like $XX.XX, and em-dashes
+    const parts = text.split(/(\*\*[^*]+\*\*|\$[\d,]+(?:\.\d{2})?(?:\/\w+)?)/g);
+    return parts.map((p, i) => {
+      if (p.startsWith("**") && p.endsWith("**"))
+        return <strong key={i} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>;
+      if (/^\$[\d,]+/.test(p))
+        return <span key={i} className="font-semibold text-indigo-600">{p}</span>;
+      return p;
+    });
   }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) { flushList(); continue; }
-    const bulletMatch = line.match(/^[-*•]\s+(.+)/);
+
+    // Standalone labeled field (not in a list): **Label:** value
+    const standaloneLabel = line.match(/^\*\*(.+?):\*\*\s*(.+)/);
+    const bulletMatch = line.match(/^[-*\u2022]\s+(.+)/);
+
     if (bulletMatch) {
       listItems.push(bulletMatch[1]);
+    } else if (standaloneLabel && !bulletMatch) {
+      flushList();
+      elements.push(
+        <div key={elements.length} className="flex gap-2 py-0.5">
+          <span className="font-semibold text-gray-900 shrink-0">{standaloneLabel[1]}:</span>
+          <span className="text-gray-700">{formatInline(standaloneLabel[2])}</span>
+        </div>
+      );
     } else {
       flushList();
       elements.push(<p key={elements.length} className={i > 0 ? "mt-1.5" : ""}>{formatInline(line)}</p>);

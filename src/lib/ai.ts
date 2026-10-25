@@ -1,6 +1,21 @@
 import OpenAI from "openai";
 import { getSetting, getSettings } from "@/lib/settings";
 
+const FORMAT_RULES = `
+FORMATTING RULES (always follow these):
+- When asking for multiple pieces of information, list each one as a labeled bullet: "- **Label:** description"
+- When showing prices, always format as: **$XX.XX** or **$XX/mo** — never write prices as plain text
+- When confirming collected details, show them as a labeled summary block:
+  **Name:** ...
+  **Date:** ...
+  **Service:** ...
+  (and so on for each field)
+- When listing menu items, products, or services with prices, use this format:
+  - **Item Name** — $XX.XX (brief description if needed)
+- Keep responses concise. Never use raw dashes or asterisks as decoration — only use them for the formats above.
+- Do not use HTML. Do not use markdown headers (###). Only use the bullet and bold formats described above.
+`;
+
 export const AGENT_PROMPTS: Record<string, string> = {
   CUSTOMER_SUPPORT: `You are a helpful customer support agent. Answer questions clearly and concisely. 
 If the issue is complex or the customer is upset, say: "I'll connect you with a human agent right away."
@@ -90,7 +105,7 @@ export async function runAgent(
 ) {
   const settings = await getSettings(["AI_PROVIDER", "AI_OPENAI_ENABLED", "AI_GROK_ENABLED", "AI_GEMINI_ENABLED"]);
   const provider = settings["AI_PROVIDER"] || "openai";
-  const prompt = systemPrompt || AGENT_PROMPTS[agentType];
+  const prompt = (systemPrompt || AGENT_PROMPTS[agentType] || "") + FORMAT_RULES;
 
   switch (provider) {
     case "grok":
