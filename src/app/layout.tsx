@@ -4,7 +4,7 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const BASE_URL = "https://aurex.io";
+const BASE_URL = "https://aurex.payroo.xyz";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

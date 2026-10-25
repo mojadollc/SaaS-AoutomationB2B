@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "Aurex Blog – AI Automation Guides, Case Studies & Business Tips",
   description: "Explore AI automation guides, real business case studies, and practical tips for automating customer support, bookings, and lead follow-ups. Learn how businesses in the Philippines use Aurex to grow faster.",
   keywords: ["AI automation blog", "business automation tips", "AI chatbot guide", "customer support automation guide", "AI for small business Philippines", "automation case studies"],
-  alternates: { canonical: "https://aurex.io/blog" },
-  openGraph: { url: "https://aurex.io/blog", title: "Aurex Blog – AI Automation Guides & Case Studies", description: "Practical AI automation guides and case studies for business owners in Southeast Asia." },
+  alternates: { canonical: "https://aurex.payroo.xyz/blog" },
+  openGraph: { url: "https://aurex.payroo.xyz/blog", title: "Aurex Blog – AI Automation Guides & Case Studies", description: "Practical AI automation guides and case studies for business owners in Southeast Asia." },
 };
 
 const posts = [

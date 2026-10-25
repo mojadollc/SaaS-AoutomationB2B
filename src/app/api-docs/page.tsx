@@ -598,7 +598,7 @@ function verifyWebhook(payload: string, signature: string, secret: string) {
 
           {/* Footer */}
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-400">
-            <p>Need help? <a href="mailto:support@Aurex.io" className="text-indigo-600 hover:underline">support@Aurex.io</a></p>
+            <p>Need help? <a href="mailto:support@aurex.payroo.xyz" className="text-indigo-600 hover:underline">support@aurex.payroo.xyz</a></p>
             <p className="mt-1">© 2025 Aurex. All rights reserved.</p>
           </div>
         </main>

@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "Read Aurex's Terms of Service. Understand your rights and responsibilities when using our AI automation platform, including billing, acceptable use, and data policies.",
   keywords: ["Aurex terms of service", "AI platform terms", "SaaS terms and conditions", "user agreement AI platform"],
   robots: { index: true, follow: false },
-  alternates: { canonical: "https://aurex.io/terms" },
-  openGraph: { url: "https://aurex.io/terms", title: "Terms of Service – Aurex", description: "Terms and conditions for using the Aurex AI automation platform." },
+  alternates: { canonical: "https://aurex.payroo.xyz/terms" },
+  openGraph: { url: "https://aurex.payroo.xyz/terms", title: "Terms of Service – Aurex", description: "Terms and conditions for using the Aurex AI automation platform." },
 };
 
 const sections = [
@@ -88,7 +88,7 @@ You may not copy, modify, distribute, sell, or lease any part of the Service wit
   },
   {
     title: "8. Privacy",
-    content: `Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at aurex.io/privacy.`,
+    content: `Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at aurex.payroo.xyz/privacy.`,
   },
   {
     title: "9. Disclaimers",
@@ -127,7 +127,7 @@ Any disputes arising from these Terms or your use of the Service shall be subjec
     content: `If you have questions about these Terms, please contact us at:
 
 **Aurex Technologies Inc.**
-Email: legal@aurex.io
+Email: legal@aurex.payroo.xyz
 Address: Manila, Philippines`,
   },
 ];
@@ -152,7 +152,7 @@ export default function TermsPage() {
           <div className="max-w-3xl mx-auto px-8 py-4">
             <p className="text-xs text-gray-400">
               These Terms govern your use of Aurex. By using our platform, you agree to these terms. Questions? Email{" "}
-              <a href="mailto:legal@aurex.io" className="text-amber-600 hover:underline">legal@aurex.io</a>
+              <a href="mailto:legal@aurex.payroo.xyz" className="text-amber-600 hover:underline">legal@aurex.payroo.xyz</a>
             </p>
           </div>
         </div>

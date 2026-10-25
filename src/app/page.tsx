@@ -12,8 +12,8 @@ import Footer from "@/components/landing/Footer";
 export const metadata: Metadata = {
   title: "Aurex – AI Automation Platform | Automate Customer Support, Bookings & Lead Follow-Up",
   description: "Aurex deploys AI agents that handle customer support, appointment bookings, lead follow-ups, and business reports 24/7. Start free — no credit card required. Trusted by 10,000+ businesses.",
-  alternates: { canonical: "https://aurex.io" },
-  openGraph: { url: "https://aurex.io" },
+  alternates: { canonical: "https://aurex.payroo.xyz" },
+  openGraph: { url: "https://aurex.payroo.xyz" },
 };
 
 export default function HomePage() {

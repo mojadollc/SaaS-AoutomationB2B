@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "About Aurex – AI Automation Company | Our Mission, Team & Story",
   description: "Learn about Aurex — the AI automation platform built for Southeast Asian businesses. Meet our team, discover our mission, and see how we help 10,000+ businesses automate customer support, bookings, and lead follow-ups.",
   keywords: ["about Aurex", "AI automation company Philippines", "AI startup Southeast Asia", "business automation team", "AI agents company"],
-  alternates: { canonical: "https://aurex.io/about" },
-  openGraph: { url: "https://aurex.io/about", title: "About Aurex – AI Automation Company", description: "Meet the team behind Aurex, the AI automation platform trusted by 10,000+ businesses in Southeast Asia." },
+  alternates: { canonical: "https://aurex.payroo.xyz/about" },
+  openGraph: { url: "https://aurex.payroo.xyz/about", title: "About Aurex – AI Automation Company", description: "Meet the team behind Aurex, the AI automation platform trusted by 10,000+ businesses in Southeast Asia." },
 };
 
 const team = [

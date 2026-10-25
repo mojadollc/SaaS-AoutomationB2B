@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://aurex.io";
+const BASE_URL = "https://aurex.payroo.xyz";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

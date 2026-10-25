@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "Careers at Aurex – Join the AI Automation Team | Remote Jobs Philippines",
   description: "Join Aurex and help build the future of AI-powered business automation. We're hiring engineers, designers, and marketers across Southeast Asia. Remote-first, competitive pay, equity included.",
   keywords: ["Aurex careers", "AI startup jobs Philippines", "remote jobs Southeast Asia", "AI engineer jobs Manila", "tech jobs Philippines", "SaaS company hiring"],
-  alternates: { canonical: "https://aurex.io/careers" },
-  openGraph: { url: "https://aurex.io/careers", title: "Careers at Aurex – Remote AI Jobs in Southeast Asia", description: "Join our team and build AI automation tools used by 10,000+ businesses. Remote-first, equity, competitive pay." },
+  alternates: { canonical: "https://aurex.payroo.xyz/careers" },
+  openGraph: { url: "https://aurex.payroo.xyz/careers", title: "Careers at Aurex – Remote AI Jobs in Southeast Asia", description: "Join our team and build AI automation tools used by 10,000+ businesses. Remote-first, equity, competitive pay." },
 };
 
 const openRoles = [
@@ -90,7 +90,7 @@ export default function CareersPage() {
             <div className="mt-12 bg-amber-50 border border-amber-100 rounded-2xl p-8 text-center">
               <h3 className="font-bold text-gray-900 mb-2">Don't see your role?</h3>
               <p className="text-gray-500 text-sm mb-6">We're always looking for exceptional people. Send us your resume and tell us how you'd contribute.</p>
-              <a href="mailto:careers@aurex.io" className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">
+              <a href="mailto:careers@aurex.payroo.xyz" className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">
                 Send Open Application
               </a>
             </div>

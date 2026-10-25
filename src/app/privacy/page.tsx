@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "Read Aurex's Privacy Policy to understand how we collect, use, and protect your personal data. We are committed to transparency and data security for all users of our AI automation platform.",
   keywords: ["Aurex privacy policy", "AI platform data privacy", "user data protection", "GDPR compliance", "data security SaaS"],
   robots: { index: true, follow: false },
-  alternates: { canonical: "https://aurex.io/privacy" },
-  openGraph: { url: "https://aurex.io/privacy", title: "Privacy Policy – Aurex", description: "How Aurex collects, uses, and protects your personal data." },
+  alternates: { canonical: "https://aurex.payroo.xyz/privacy" },
+  openGraph: { url: "https://aurex.payroo.xyz/privacy", title: "Privacy Policy – Aurex", description: "How Aurex collects, uses, and protects your personal data." },
 };
 
 const sections = [
@@ -52,7 +52,7 @@ const sections = [
   },
   {
     title: "4. Data Retention",
-    content: `We retain your personal information for as long as your account is active or as needed to provide services. You may request deletion of your account and associated data at any time by contacting privacy@aurex.io.
+    content: `We retain your personal information for as long as your account is active or as needed to provide services. You may request deletion of your account and associated data at any time by contacting privacy@aurex.payroo.xyz.
 
 Conversation logs and AI-generated content are retained for 90 days by default. You may configure shorter retention periods in your account settings.
 
@@ -91,11 +91,11 @@ You can control cookies through your browser settings. Disabling cookies may aff
 - **Portability:** Request your data in a machine-readable format
 - **Objection:** Object to certain types of processing
 
-To exercise any of these rights, contact us at privacy@aurex.io. We will respond within 30 days.`,
+To exercise any of these rights, contact us at privacy@aurex.payroo.xyz. We will respond within 30 days.`,
   },
   {
     title: "8. Children's Privacy",
-    content: `Aurex is not directed to children under the age of 13. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately at privacy@aurex.io.`,
+    content: `Aurex is not directed to children under the age of 13. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately at privacy@aurex.payroo.xyz.`,
   },
   {
     title: "9. Changes to This Policy",
@@ -106,7 +106,7 @@ To exercise any of these rights, contact us at privacy@aurex.io. We will respond
     content: `If you have questions about this Privacy Policy or our data practices, please contact us at:
 
 **Aurex Technologies Inc.**
-Email: privacy@aurex.io
+Email: privacy@aurex.payroo.xyz
 Address: Manila, Philippines`,
   },
 ];
