@@ -247,6 +247,20 @@ export default function AdminSettingsPage() {
     setApiLoading(false);
   }
 
+  async function autoFillFromEnv() {
+    const res = await fetch("/api/admin/settings/env");
+    if (res.ok) {
+      const envVals = await res.json();
+      setApiValues((prev) => {
+        const merged = { ...prev };
+        for (const [k, v] of Object.entries(envVals as Record<string, string>)) {
+          if (v && (!merged[k] || merged[k] === "")) merged[k] = v;
+        }
+        return merged;
+      });
+    }
+  }
+
   function updateTheme(patch: Partial<AdminTheme>) {
     const next = { ...theme, ...patch };
     setTheme(next);
@@ -630,9 +644,18 @@ export default function AdminSettingsPage() {
 
           <div className="flex items-center justify-between">
             <p className="text-gray-400 text-sm">Keys are stored securely in the database and override environment variables.</p>
-            <button onClick={loadApiKeys} className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors" title="Refresh">
-              <RefreshCw className={`w-4 h-4 ${apiLoading ? "animate-spin" : ""}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={autoFillFromEnv}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                title="Auto-fill empty fields from .env"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Auto-fill from ENV
+              </button>
+              <button onClick={loadApiKeys} className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors" title="Refresh">
+                <RefreshCw className={`w-4 h-4 ${apiLoading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
           </div>
 
           {API_GROUPS.map((group) => (
