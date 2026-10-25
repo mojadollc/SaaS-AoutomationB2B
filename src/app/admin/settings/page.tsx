@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw } from "lucide-react";
+import { Check, RotateCcw, Eye, EyeOff, Save, RefreshCw, Power } from "lucide-react";
 import { applyTheme, loadTheme, saveTheme, THEME_DEFAULTS, AdminTheme } from "@/components/admin/ThemeProvider";
 
 // ─── Appearance data ───────────────────────────────────────────────────────────
@@ -132,6 +132,8 @@ export default function AdminSettingsPage() {
   const [apiSaving, setApiSaving] = useState(false);
   const [apiSaved, setApiSaved] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const [restartMsg, setRestartMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => { setTheme(loadTheme()); }, []);
 
@@ -174,6 +176,21 @@ export default function AdminSettingsPage() {
     setApiSaving(false);
     setApiSaved(true);
     setTimeout(() => setApiSaved(false), 2000);
+  }
+
+  async function handleRestart() {
+    if (!confirm("Restart the server now? The app will be unavailable for a few seconds.")) return;
+    setRestarting(true);
+    setRestartMsg(null);
+    try {
+      const res = await fetch("/api/admin/restart", { method: "POST" });
+      const data = await res.json();
+      setRestartMsg({ ok: data.ok, text: data.ok ? "Server restarted successfully." : (data.error ?? "Restart failed.") });
+    } catch {
+      setRestartMsg({ ok: false, text: "Could not reach the server." });
+    }
+    setRestarting(false);
+    setTimeout(() => setRestartMsg(null), 5000);
   }
 
   const current = { ...THEME_DEFAULTS, ...theme };
@@ -374,8 +391,23 @@ export default function AdminSettingsPage() {
                 <h2 className="text-white font-semibold">{group.label}</h2>
               </div>
               {(group as any).warning && (
-                <div className="mb-4 px-3 py-2 rounded-lg text-xs text-red-300 bg-red-950 border border-red-800">
-                  ⚠️ {(group as any).warning}
+                <div className="mb-4 px-3 py-2.5 rounded-lg bg-red-950 border border-red-800 flex items-center justify-between gap-3">
+                  <span className="text-xs text-red-300">⚠️ {(group as any).warning}</span>
+                  <button
+                    onClick={handleRestart}
+                    disabled={restarting}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-800 hover:bg-red-700 text-white transition-colors disabled:opacity-60 shrink-0"
+                  >
+                    <Power className={`w-3.5 h-3.5 ${restarting ? "animate-spin" : ""}`} />
+                    {restarting ? "Restarting..." : "Restart Server"}
+                  </button>
+                </div>
+              )}
+              {restartMsg && (group as any).warning && (
+                <div className={`mb-4 px-3 py-2 rounded-lg text-xs font-medium ${
+                  restartMsg.ok ? "bg-green-950 border border-green-800 text-green-300" : "bg-red-950 border border-red-800 text-red-300"
+                }`}>
+                  {restartMsg.ok ? "✓" : "✗"} {restartMsg.text}
                 </div>
               )}
               <div className="space-y-3">
