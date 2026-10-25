@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PLAN_LIMITS } from "@/lib/plans";
+import { PLAN_LIMITS, checkTrialAccess } from "@/lib/plans";
 import { z } from "zod";
 
 const schema = z.object({
@@ -28,6 +28,9 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const plan = (session.user as any).plan as keyof typeof PLAN_LIMITS;
+  const trialError = await checkTrialAccess(plan, session.user.id, prisma);
+  if (trialError) return NextResponse.json({ error: trialError }, { status: 403 });
+
   const maxAgents = PLAN_LIMITS[plan]?.agents ?? 1;
 
   if (maxAgents !== -1) {

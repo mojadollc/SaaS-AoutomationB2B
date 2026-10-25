@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runAgent, AGENT_PROMPTS } from "@/lib/ai";
 import { extractAndCreateOrder } from "@/lib/orders";
-import { checkConversationLimit } from "@/lib/plans";
+import { checkConversationLimit, checkTrialAccess } from "@/lib/plans";
 import { z } from "zod";
 
 const schema = z.object({
@@ -40,6 +40,9 @@ export async function POST(req: Request) {
   const { agentId, contact, message } = parsed.data;
 
   const plan = (session.user as any).plan ?? "FREE";
+  const trialError = await checkTrialAccess(plan, session.user.id, prisma);
+  if (trialError) return NextResponse.json({ error: trialError }, { status: 403 });
+
   const limitError = await checkConversationLimit(session.user.id, plan, prisma);
   if (limitError) return NextResponse.json({ error: limitError }, { status: 403 });
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runAgent, AGENT_PROMPTS } from "@/lib/ai";
-import { checkConversationLimit } from "@/lib/plans";
+import { checkConversationLimit, checkTrialAccess } from "@/lib/plans";
 import { z } from "zod";
 
 const schema = z.object({ message: z.string().min(1) });
@@ -38,6 +38,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   // Only count limit if this conversation was created this month (new conversations count toward limit)
   const plan = (session.user as any).plan ?? "FREE";
+  const trialError = await checkTrialAccess(plan, session.user.id, prisma);
+  if (trialError) return NextResponse.json({ error: trialError }, { status: 403 });
+
   const limitError = await checkConversationLimit(session.user.id, plan, prisma);
   // Allow continuing conversations already started — only block if this convo itself is new this month
   // and we're already at the limit. We re-check by seeing if convo was created before month start.

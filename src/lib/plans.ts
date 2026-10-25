@@ -7,6 +7,37 @@ export const PLAN_LIMITS = {
 
 export type PlanKey = keyof typeof PLAN_LIMITS;
 
+export const TRIAL_DAYS = 7;
+
+/** Returns days remaining in trial (negative = expired). Only applies to FREE plan. */
+export function getTrialDaysLeft(createdAt: Date): number {
+  const expiry = new Date(createdAt);
+  expiry.setDate(expiry.getDate() + TRIAL_DAYS);
+  return Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
+export function isTrialExpired(plan: string, createdAt: Date): boolean {
+  if (plan !== "FREE") return false;
+  return getTrialDaysLeft(createdAt) <= 0;
+}
+
+/**
+ * Returns an error string if the FREE trial has expired, null if access is allowed.
+ * Pass the user's createdAt from DB.
+ */
+export async function checkTrialAccess(
+  plan: string,
+  userId: string,
+  prisma: any
+): Promise<string | null> {
+  if (plan !== "FREE") return null;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } });
+  if (!user) return null;
+  if (isTrialExpired(plan, user.createdAt))
+    return "Your 7-day free trial has expired. Please upgrade to the Starter plan to continue.";
+  return null;
+}
+
 /** Returns how many conversations the user has started this calendar month */
 export async function getMonthlyConversationCount(userId: string, prisma: any): Promise<number> {
   const start = new Date();

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateApiKey } from "@/lib/apikeys";
+import { checkTrialAccess } from "@/lib/plans";
 import { z } from "zod";
 
 export async function GET() {
@@ -22,6 +23,10 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name } = z.object({ name: z.string().min(1) }).parse(await req.json());
+
+  const plan = (session.user as any).plan ?? "FREE";
+  const trialError = await checkTrialAccess(plan, session.user.id, prisma);
+  if (trialError) return NextResponse.json({ error: trialError }, { status: 403 });
 
   const apiKey = await prisma.apiKey.create({
     data: { userId: session.user.id, name, key: generateApiKey() },

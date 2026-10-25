@@ -9,7 +9,7 @@ type PricingPlan = {
 };
 
 const DEFAULT_PLANS: PricingPlan[] = [
-  { key: "FREE",    name: "Free",    priceUSD: 0,   pricePHP: 0,     desc: "Perfect for trying out Aurex.",              features: ["1 AI Agent", "50 conversations/mo", "Web widget", "Email support"],                                          cta: "Get Started Free",  href: "/register",             highlight: false },
+  { key: "FREE",    name: "7-Day Trial", priceUSD: 0,   pricePHP: 0,     desc: "Try all features free for 7 days.",              features: ["1 AI Agent", "50 conversations/mo", "Web widget", "Email support"],                                          cta: "Start Free Trial",  href: "/register",             highlight: false },
   { key: "STARTER", name: "Starter", priceUSD: 29,  pricePHP: 1650,  desc: "For small businesses getting started.",       features: ["3 AI Agents", "500 conversations/mo", "All channels", "Priority support", "Analytics"],                        cta: "Start Free Trial",  href: "/register?plan=STARTER", highlight: false },
   { key: "PRO",     name: "Pro",     priceUSD: 99,  pricePHP: 5600,  desc: "For growing businesses that need more.",      features: ["10 AI Agents", "5,000 conversations/mo", "All channels", "Custom prompts", "Webhooks", "API access"],          cta: "Start Free Trial",  href: "/register?plan=PRO",    highlight: true  },
   { key: "AGENCY",  name: "Agency",  priceUSD: 299, pricePHP: 16800, desc: "For agencies managing multiple clients.",      features: ["Unlimited agents", "Unlimited conversations", "White-label", "Dedicated support", "Custom integrations"],      cta: "Contact Sales",     href: "/register?plan=AGENCY", highlight: false },

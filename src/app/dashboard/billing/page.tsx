@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle, Zap, CreditCard, X } from "lucide-react";
+import { CheckCircle, Zap, CreditCard, X, Clock, AlertTriangle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 
@@ -39,6 +39,7 @@ export default function BillingPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
   const [loading, setLoading] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string>("FREE");
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [gatewayError, setGatewayError] = useState("");
   const [enabledGateways, setEnabledGateways] = useState({ stripe: true, paymongo: true, xendit: true });
@@ -47,6 +48,12 @@ export default function BillingPage() {
   useEffect(() => {
     fetch("/api/user/me").then((r) => r.json()).then((u) => {
       if (u?.plan) setCurrentPlan(u.plan);
+      if (u?.plan === "FREE" && u?.createdAt) {
+        const expiry = new Date(u.createdAt);
+        expiry.setDate(expiry.getDate() + 7);
+        const days = Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        setTrialDaysLeft(days);
+      }
     });
     fetch("/api/payments").then((r) => r.json()).then((g) => {
       setEnabledGateways(g);
@@ -174,8 +181,19 @@ export default function BillingPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-500 text-sm">Current plan:</p>
             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${planBadgeColors[currentPlan]}`}>
-              {currentPlan}
+              {currentPlan === "FREE" ? "Free Trial" : currentPlan}
             </span>
+            {currentPlan === "FREE" && trialDaysLeft !== null && (
+              trialDaysLeft <= 0 ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">
+                  <AlertTriangle className="w-3 h-3" /> Trial expired
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">
+                  <Clock className="w-3 h-3" /> {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} left
+                </span>
+              )
+            )}
           </div>
         </div>
         {currentPlan !== "FREE" && (
