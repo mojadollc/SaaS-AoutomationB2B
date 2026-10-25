@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCheckoutSession, createPortalSession, PLANS } from "@/lib/stripe";
+import { isPaymentEnabled } from "@/lib/payments";
 import { z } from "zod";
 
 const schema = z.object({ plan: z.enum(["STARTER", "PRO", "AGENCY"]) });
@@ -9,6 +10,9 @@ const schema = z.object({ plan: z.enum(["STARTER", "PRO", "AGENCY"]) });
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!(await isPaymentEnabled("STRIPE")))
+    return NextResponse.json({ error: "Stripe payments are currently disabled" }, { status: 503 });
 
   const body = await req.json();
 

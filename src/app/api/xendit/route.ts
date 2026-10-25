@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createXenditInvoice } from "@/lib/xendit";
 import { PLAN_PRICES_PHP, type PlanKey } from "@/lib/plans";
+import { isPaymentEnabled } from "@/lib/payments";
 import { z } from "zod";
 
 const schema = z.object({ plan: z.enum(["STARTER", "PRO", "AGENCY"]) });
@@ -9,6 +10,9 @@ const schema = z.object({ plan: z.enum(["STARTER", "PRO", "AGENCY"]) });
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!(await isPaymentEnabled("XENDIT")))
+    return NextResponse.json({ error: "Xendit payments are currently disabled" }, { status: 503 });
 
   const parsed = schema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });

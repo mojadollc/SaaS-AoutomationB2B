@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
-import { CheckCircle, Zap, CreditCard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { CheckCircle, Zap, CreditCard, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { PLAN_PRICES_USD, PLAN_PRICES_PHP, PLAN_FEATURES } from "@/lib/plans";
@@ -16,37 +17,46 @@ type Currency = "USD" | "PHP";
 type PaymentMethod = "stripe" | "paymongo" | "xendit";
 
 const PAYMENT_METHODS = [
-  {
-    id: "stripe" as PaymentMethod,
-    label: "Stripe",
-    logo: "💳",
-    desc: "Credit / Debit Card",
-    currencies: ["USD"],
-  },
-  {
-    id: "paymongo" as PaymentMethod,
-    label: "PayMongo",
-    logo: "🇵🇭",
-    desc: "GCash · Maya · Cards · OTC",
-    currencies: ["PHP"],
-  },
-  {
-    id: "xendit" as PaymentMethod,
-    label: "Xendit",
-    logo: "⚡",
-    desc: "GCash · Maya · Cards · Bank Transfer",
-    currencies: ["PHP"],
-  },
+  { id: "stripe" as PaymentMethod,   label: "Stripe",   logo: "💳", desc: "Credit / Debit Card",                        currencies: ["USD"] },
+  { id: "paymongo" as PaymentMethod, label: "PayMongo", logo: "🇵🇭", desc: "GCash · Maya · Cards · OTC",                currencies: ["PHP"] },
+  { id: "xendit" as PaymentMethod,   label: "Xendit",   logo: "⚡", desc: "GCash · Maya · Cards · Bank Transfer",       currencies: ["PHP"] },
 ];
 
+const planBadgeColors: Record<string, string> = {
+  FREE:    "bg-gray-100 text-gray-600",
+  STARTER: "bg-blue-100 text-blue-700",
+  PRO:     "bg-amber-100 text-amber-700",
+  AGENCY:  "bg-purple-100 text-purple-700",
+};
+
 export default function BillingPage() {
+  const searchParams = useSearchParams();
   const [currency, setCurrency] = useState<Currency>("USD");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
   const [loading, setLoading] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<string>("FREE");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [enabledGateways, setEnabledGateways] = useState({ stripe: true, paymongo: true, xendit: true });
+
+  useEffect(() => {
+    fetch("/api/user/me").then((r) => r.json()).then((u) => {
+      if (u?.plan) setCurrentPlan(u.plan);
+    });
+    fetch("/api/payments").then((r) => r.json()).then((g) => {
+      setEnabledGateways(g);
+      // auto-select first enabled method
+      const first = PAYMENT_METHODS.find((m) => g[m.id]);
+      if (first) { setPaymentMethod(first.id); setCurrency(first.currencies[0] as Currency); }
+    }).catch(() => {});
+    if (searchParams.get("upgraded") === "true") {
+      setShowSuccess(true);
+      // Remove query param from URL without reload
+      window.history.replaceState({}, "", "/dashboard/billing");
+    }
+  }, [searchParams]);
 
   function handleCurrencyChange(c: Currency) {
     setCurrency(c);
-    // Auto-select a compatible payment method
     if (c === "PHP" && paymentMethod === "stripe") setPaymentMethod("paymongo");
     if (c === "USD") setPaymentMethod("stripe");
   }
@@ -60,12 +70,13 @@ export default function BillingPage() {
   }
 
   async function handleUpgrade(planKey: string) {
-    if (planKey === "FREE") return;
+    if (planKey === "FREE" || planKey === currentPlan) return;
     setLoading(planKey);
 
-    let endpoint = "/api/stripe";
-    if (paymentMethod === "paymongo") endpoint = "/api/paymongo";
-    if (paymentMethod === "xendit") endpoint = "/api/xendit";
+    const endpoint =
+      paymentMethod === "paymongo" ? "/api/paymongo" :
+      paymentMethod === "xendit"   ? "/api/xendit" :
+      "/api/stripe";
 
     const res = await fetch(endpoint, {
       method: "POST",
@@ -95,16 +106,46 @@ export default function BillingPage() {
     return `₱${PLAN_PRICES_PHP[planKey].toLocaleString()}`;
   }
 
+  function getButtonLabel(planKey: string) {
+    if (planKey === currentPlan) return "Current Plan";
+    if (planKey === "FREE") return "Downgrade to Free";
+    const via = paymentMethod === "stripe" ? "Stripe" : paymentMethod === "paymongo" ? "PayMongo" : "Xendit";
+    const planIndex = PLANS.findIndex((p) => p.key === planKey);
+    const currentIndex = PLANS.findIndex((p) => p.key === currentPlan);
+    return planIndex > currentIndex ? `Upgrade via ${via}` : `Switch via ${via}`;
+  }
+
   return (
     <div className="p-8">
+      {/* Success banner */}
+      {showSuccess && (
+        <div className="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+          <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-green-800">Plan upgraded successfully!</p>
+            <p className="text-xs text-green-600 mt-0.5">Your account has been updated to the <strong>{currentPlan}</strong> plan.</p>
+          </div>
+          <button onClick={() => setShowSuccess(false)} className="text-green-400 hover:text-green-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Billing & Plans</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage your subscription</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-gray-500 text-sm">Current plan:</p>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${planBadgeColors[currentPlan]}`}>
+              {currentPlan}
+            </span>
+          </div>
         </div>
-        <Button variant="secondary" onClick={handlePortal} loading={loading === "portal"}>
-          Manage Billing
-        </Button>
+        {currentPlan !== "FREE" && (
+          <Button variant="secondary" onClick={handlePortal} loading={loading === "portal"}>
+            Manage Billing
+          </Button>
+        )}
       </div>
 
       {/* Currency toggle */}
@@ -116,9 +157,7 @@ export default function BillingPage() {
               key={c}
               onClick={() => handleCurrencyChange(c)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                currency === c
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                currency === c ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {c === "USD" ? "🇺🇸 USD" : "🇵🇭 PHP"}
@@ -128,10 +167,15 @@ export default function BillingPage() {
       </div>
 
       {/* Payment method selector */}
+      {!enabledGateways.stripe && !enabledGateways.paymongo && !enabledGateways.xendit ? (
+        <div className="mb-8 bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-700">
+          ⚠️ No payment methods are currently enabled. Please contact support.
+        </div>
+      ) : (
       <div className="mb-8">
         <p className="text-sm font-medium text-gray-700 mb-3">Pay with:</p>
         <div className="flex flex-wrap gap-3">
-          {PAYMENT_METHODS.map((method) => {
+          {PAYMENT_METHODS.filter((m) => enabledGateways[m.id]).map((method) => {
             const compatible = method.currencies.includes(currency);
             return (
               <button
@@ -153,15 +197,11 @@ export default function BillingPage() {
                   </p>
                   <p className="text-xs text-gray-500">{method.desc}</p>
                 </div>
-                {paymentMethod === method.id && (
-                  <CheckCircle className="w-4 h-4 text-amber-500 ml-1 shrink-0" />
-                )}
+                {paymentMethod === method.id && <CheckCircle className="w-4 h-4 text-amber-500 ml-1 shrink-0" />}
               </button>
             );
           })}
         </div>
-
-        {/* Payment method info banners */}
         {paymentMethod === "paymongo" && (
           <div className="mt-3 flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-blue-700">
             <span className="text-base shrink-0">🇵🇭</span>
@@ -181,53 +221,69 @@ export default function BillingPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Plan cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {PLANS.map((plan) => (
-          <Card key={plan.key} className={plan.highlight ? "border-amber-500 border-2 bg-gradient-to-b from-amber-50 to-yellow-50" : ""}>
-            <CardHeader>
-              {plan.highlight && (
-                <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 mb-2">
-                  <Zap className="w-3 h-3" /> Most Popular
+        {PLANS.map((plan) => {
+          const isCurrentPlan = plan.key === currentPlan;
+          return (
+            <Card
+              key={plan.key}
+              className={
+                isCurrentPlan
+                  ? "border-green-400 border-2 ring-2 ring-green-100"
+                  : plan.highlight
+                  ? "border-amber-500 border-2 bg-gradient-to-b from-amber-50 to-yellow-50"
+                  : ""
+              }
+            >
+              <CardHeader>
+                {isCurrentPlan && (
+                  <div className="flex items-center gap-1 text-xs font-semibold text-green-600 mb-2">
+                    <CheckCircle className="w-3 h-3" /> Your Current Plan
+                  </div>
+                )}
+                {!isCurrentPlan && plan.highlight && (
+                  <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 mb-2">
+                    <Zap className="w-3 h-3" /> Most Popular
+                  </div>
+                )}
+                <h3 className="font-bold text-gray-900">{plan.name}</h3>
+                <div className="mt-1">
+                  <span className="text-3xl font-bold text-gray-900">{formatPrice(plan.key)}</span>
+                  <span className="text-gray-500 text-sm">/mo</span>
                 </div>
-              )}
-              <h3 className="font-bold text-gray-900">{plan.name}</h3>
-              <div className="mt-1">
-                <span className="text-3xl font-bold text-gray-900">{formatPrice(plan.key)}</span>
-                <span className="text-gray-500 text-sm">/mo</span>
-              </div>
-              {plan.key !== "FREE" && (
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {currency === "PHP"
-                    ? `≈ $${PLAN_PRICES_USD[plan.key]} USD`
-                    : `≈ ₱${PLAN_PRICES_PHP[plan.key].toLocaleString()} PHP`}
-                </p>
-              )}
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 mb-6">
-                {(PLAN_FEATURES[plan.key as keyof typeof PLAN_FEATURES] ?? []).map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                variant={plan.highlight ? "primary" : "secondary"}
-                className="w-full"
-                disabled={plan.key === "FREE"}
-                loading={loading === plan.key}
-                onClick={() => handleUpgrade(plan.key)}
-              >
-                {plan.key === "FREE"
-                  ? "Current Free Plan"
-                  : `Upgrade via ${paymentMethod === "stripe" ? "Stripe" : paymentMethod === "paymongo" ? "PayMongo" : "Xendit"}`}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                {plan.key !== "FREE" && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {currency === "PHP"
+                      ? `≈ $${PLAN_PRICES_USD[plan.key]} USD`
+                      : `≈ ₱${PLAN_PRICES_PHP[plan.key].toLocaleString()} PHP`}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  {(PLAN_FEATURES[plan.key as keyof typeof PLAN_FEATURES] ?? []).map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                      <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  variant={isCurrentPlan ? "secondary" : plan.highlight ? "primary" : "secondary"}
+                  className="w-full"
+                  disabled={isCurrentPlan || plan.key === "FREE"}
+                  loading={loading === plan.key}
+                  onClick={() => handleUpgrade(plan.key)}
+                >
+                  {getButtonLabel(plan.key)}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Accepted payment logos */}

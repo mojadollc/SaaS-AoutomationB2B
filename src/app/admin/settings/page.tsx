@@ -134,12 +134,39 @@ export default function AdminSettingsPage() {
   const [apiLoading, setApiLoading] = useState(false);
   const [restarting, setRestarting] = useState(false);
   const [restartMsg, setRestartMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [gateways, setGateways] = useState({ stripe: true, paymongo: true, xendit: true });
+  const [gatewaySaving, setGatewaySaving] = useState(false);
 
   useEffect(() => { setTheme(loadTheme()); }, []);
 
   useEffect(() => {
-    if (tab === "api") loadApiKeys();
+    if (tab === "api") { loadApiKeys(); loadGateways(); }
   }, [tab]);
+
+  async function loadGateways() {
+    const res = await fetch("/api/payments");
+    if (res.ok) setGateways(await res.json());
+  }
+
+  async function saveGateways(updated: typeof gateways) {
+    setGatewaySaving(true);
+    await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        PAYMENT_STRIPE_ENABLED: String(updated.stripe),
+        PAYMENT_PAYMONGO_ENABLED: String(updated.paymongo),
+        PAYMENT_XENDIT_ENABLED: String(updated.xendit),
+      }),
+    });
+    setGatewaySaving(false);
+  }
+
+  function toggleGateway(key: keyof typeof gateways) {
+    const updated = { ...gateways, [key]: !gateways[key] };
+    setGateways(updated);
+    saveGateways(updated);
+  }
 
   async function loadApiKeys() {
     setApiLoading(true);
@@ -377,6 +404,43 @@ export default function AdminSettingsPage() {
       {/* ── API Keys Tab ── */}
       {tab === "api" && (
         <div className="space-y-6">
+          {/* Payment Gateway Toggles */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+              <h2 className="text-white font-semibold">Payment Gateways</h2>
+              {gatewaySaving && <span className="text-xs text-gray-500 ml-auto">Saving...</span>}
+            </div>
+            <p className="text-gray-500 text-xs mb-5">Enable or disable payment methods shown to users on the billing page.</p>
+            <div className="space-y-3">
+              {([
+                { key: "stripe",   label: "Stripe",   desc: "Credit / Debit Card (USD)",                    color: "#635bff" },
+                { key: "paymongo", label: "PayMongo", desc: "GCash · Maya · Cards · OTC (PHP)",             color: "#0070f3" },
+                { key: "xendit",   label: "Xendit",   desc: "GCash · Maya · Bank Transfer (PHP)",           color: "#003d79" },
+              ] as { key: keyof typeof gateways; label: string; desc: string; color: string }[]).map(({ key, label, desc, color }) => (
+                <div key={key} className="flex items-center justify-between px-4 py-3 bg-gray-800 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+                    <div>
+                      <p className="text-sm font-medium text-white">{label}</p>
+                      <p className="text-xs text-gray-500">{desc}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleGateway(key)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      gateways[key] ? "bg-green-500" : "bg-gray-600"
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                      gateways[key] ? "translate-x-5" : "translate-x-0"
+                    }`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <p className="text-gray-400 text-sm">Keys are stored securely in the database and override environment variables.</p>
             <button onClick={loadApiKeys} className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors" title="Refresh">
