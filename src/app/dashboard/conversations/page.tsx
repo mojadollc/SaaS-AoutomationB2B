@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Send, Plus, MessageSquare, CheckCircle, AlertTriangle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -26,71 +26,121 @@ export default function ConversationsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [aiTyping, setAiTyping] = useState(false);
+  const [error, setError] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [newForm, setNewForm] = useState({ agentId: "", contact: "", message: "" });
   const bottomRef = useRef<HTMLDivElement>(null);
-  const submittingRef = useRef(false);
+  const selectedRef = useRef<Conversation | null>(null);
 
-  async function fetchConversations() {
-    const res = await fetch("/api/conversations");
-    if (res.ok) {
-      const data = await res.json();
-      setConversations(data);
-      if (selected) {
-        const updated = data.find((c: Conversation) => c.id === selected.id);
-        if (updated) setSelected(updated);
-      }
-    }
-  }
-
-  useEffect(() => {
-    fetchConversations();
-    fetch("/api/agents").then((r) => r.json()).then(setAgents);
-  }, []);
+  // Keep ref in sync so callbacks always see latest selected
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selected?.messages]);
+  }, [selected?.messages, aiTyping]);
+
+  const fetchConversations = useCallback(async (selectId?: string) => {
+    const res = await fetch("/api/conversations");
+    if (!res.ok) return;
+    const data: Conversation[] = await res.json();
+    setConversations(data);
+    const current = selectedRef.current;
+    if (selectId) {
+      const found = data.find((c) => c.id === selectId);
+      if (found) setSelected(found);
+    } else if (current) {
+      const updated = data.find((c) => c.id === current.id);
+      if (updated) setSelected(updated);
+    }
+  }, []);
+
+  // Initial load + polling every 5s
+  useEffect(() => {
+    fetchConversations();
+    fetch("/api/agents").then((r) => r.json()).then(setAgents);
+    const interval = setInterval(() => fetchConversations(), 5000);
+    return () => clearInterval(interval);
+  }, [fetchConversations]);
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!selected || !message.trim() || submittingRef.current) return;
-    submittingRef.current = true;
-    setSending(true);
+    const current = selectedRef.current;
+    if (!current || !message.trim() || sending) return;
 
-    const res = await fetch(`/api/conversations/${selected.id}`, {
+    const optimisticMsg: Message = {
+      id: `optimistic-${Date.now()}`,
+      role: "user",
+      content: message,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Show user message immediately
+    setSelected((prev) => prev ? { ...prev, messages: [...prev.messages, optimisticMsg] } : prev);
+    setMessage("");
+    setSending(true);
+    setAiTyping(true);
+    setError("");
+
+    const res = await fetch(`/api/conversations/${current.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message: optimisticMsg.content }),
     });
 
-    if (res.ok) {
-      setMessage("");
-      await fetchConversations();
-    }
+    setAiTyping(false);
     setSending(false);
-    submittingRef.current = false;
+
+    if (res.ok) {
+      const aiMessage: Message = await res.json();
+      // Replace optimistic message + append real AI reply
+      setSelected((prev) => {
+        if (!prev) return prev;
+        const msgs = prev.messages.filter((m) => m.id !== optimisticMsg.id);
+        return { ...prev, messages: [...msgs, { ...optimisticMsg, id: `user-${Date.now()}` }, aiMessage] };
+      });
+      // Sync sidebar quietly
+      fetchConversations();
+    } else {
+      // Rollback optimistic message
+      setSelected((prev) => {
+        if (!prev) return prev;
+        return { ...prev, messages: prev.messages.filter((m) => m.id !== optimisticMsg.id) };
+      });
+      setMessage(optimisticMsg.content);
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Failed to send. Check your OpenAI API key in Admin → Settings.");
+    }
   }
 
   async function startConversation(e: React.FormEvent) {
     e.preventDefault();
-    if (submittingRef.current) return;
-    submittingRef.current = true;
-    setSending(true);
+    if (starting) return;
+    setStarting(true);
+
+    // Close modal immediately with optimistic feedback
+    const form = { ...newForm };
+    setShowNew(false);
+    setNewForm({ agentId: "", contact: "", message: "" });
+
     const res = await fetch("/api/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newForm),
+      body: JSON.stringify(form),
     });
+
+    setStarting(false);
+
     if (res.ok) {
       const data = await res.json();
-      setShowNew(false);
-      setNewForm({ agentId: "", contact: "", message: "" });
-      await fetchConversations();
-      setSelected(data.conversation);
+      // Fetch fresh list and select the new conversation
+      await fetchConversations(data.conversation.id);
+      setError("");
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Failed to start conversation. Check your OpenAI API key in Admin → Settings.");
     }
-    setSending(false);
-    submittingRef.current = false;
   }
 
   async function updateStatus(id: string, status: string) {
@@ -183,8 +233,26 @@ export default function ConversationsPage() {
                   </div>
                 </div>
               ))}
+
+              {/* AI typing indicator */}
+              {aiTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              )}
+
               <div ref={bottomRef} />
             </div>
+
+            {error && (
+              <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
+                {error}
+              </div>
+            )}
 
             {selected.status === "OPEN" && (
               <form onSubmit={sendMessage} className="bg-white border-t border-gray-200 p-4 flex gap-3">
@@ -192,9 +260,10 @@ export default function ConversationsPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  disabled={sending}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
                 />
-                <Button type="submit" loading={sending} className="gap-2">
+                <Button type="submit" loading={sending} disabled={!message.trim() || sending} className="gap-2">
                   <Send className="w-4 h-4" /> Send
                 </Button>
               </form>
@@ -250,7 +319,7 @@ export default function ConversationsPage() {
                 />
               </div>
               <div className="flex gap-3">
-                <Button type="submit" loading={sending}>Start Conversation</Button>
+                <Button type="submit" loading={starting}>Start Conversation</Button>
                 <Button type="button" variant="secondary" onClick={() => setShowNew(false)}>Cancel</Button>
               </div>
             </form>
