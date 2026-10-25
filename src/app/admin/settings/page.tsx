@@ -153,7 +153,7 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
 
   // API keys state
-  const [apiValues, setApiValues] = useState<Record<string, string>>({});
+  const [configMap, setConfigMap] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [apiSaving, setApiSaving] = useState(false);
   const [apiSaved, setApiSaved] = useState(false);
@@ -289,7 +289,7 @@ export default function AdminSettingsPage() {
     for (const [k, v] of Object.entries(dbVals)) {
       if (v && v.trim() !== "") merged[k] = v;
     }
-    setApiValues(merged);
+    setConfigMap(merged);
     const appUrl = merged["NEXTAUTH_URL"] || merged["NEXT_PUBLIC_APP_URL"] || "";
     if (appUrl) setPmWebhookUrl(`${appUrl.replace(/\/$/, "")}/api/paymongo/webhook`);
     setApiLoading(false);
@@ -299,7 +299,7 @@ export default function AdminSettingsPage() {
     const res = await fetch("/api/admin/settings/env");
     if (res.ok) {
       const envVals = await res.json();
-      setApiValues((prev) => {
+      setConfigMap((prev) => {
         const merged = { ...prev };
         for (const [k, v] of Object.entries(envVals as Record<string, string>)) {
           if (v && (!merged[k] || merged[k] === "")) merged[k] = v;
@@ -332,7 +332,7 @@ export default function AdminSettingsPage() {
     await fetch("/api/admin/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apiValues),
+      body: JSON.stringify(configMap),
     });
     setApiSaving(false);
     setApiSaved(true);
@@ -598,10 +598,10 @@ export default function AdminSettingsPage() {
               <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Your Webhook Receiver URL</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-xs text-blue-300 font-mono bg-gray-900 px-3 py-2 rounded-lg truncate">
-                  {(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook
+                  {(configMap["NEXTAUTH_URL"] || configMap["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook
                 </code>
                 <button
-                  onClick={() => copyWebhookUrl(`${(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook`)}
+                  onClick={() => copyWebhookUrl(`${(configMap["NEXTAUTH_URL"] || configMap["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook`)}
                   className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors shrink-0"
                   title="Copy URL"
                 >
@@ -737,8 +737,8 @@ export default function AdminSettingsPage() {
                   <div key={key}>
                     <label className="text-xs text-gray-400 mb-1 block">{label}</label>
                     <ApiKeyInput
-                      value={apiValues[key] ?? ""}
-                      onChange={(v) => setApiValues((prev) => ({ ...prev, [key]: v }))}
+                      value={configMap[key] ?? ""}
+                      onChange={(v) => setConfigMap((prev) => ({ ...prev, [key]: v }))}
                       isSecret={secret}
                       isRevealed={!!revealed[key]}
                       onToggle={() => setRevealed((r) => ({ ...r, [key]: !r[key] }))}
