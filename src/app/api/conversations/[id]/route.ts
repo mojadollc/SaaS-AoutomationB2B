@@ -53,7 +53,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       history
     );
   } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? "AI provider error" }, { status: 502 });
+    const msg = err?.error?.message ?? err?.message ?? String(err);
+    console.error("[runAgent error]", msg, err);
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
 
   const aiMessage = await prisma.message.create({
