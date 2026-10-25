@@ -29,6 +29,7 @@ export default function ConversationsPage() {
   const [showNew, setShowNew] = useState(false);
   const [newForm, setNewForm] = useState({ agentId: "", contact: "", message: "" });
   const bottomRef = useRef<HTMLDivElement>(null);
+  const submittingRef = useRef(false);
 
   async function fetchConversations() {
     const res = await fetch("/api/conversations");
@@ -53,7 +54,8 @@ export default function ConversationsPage() {
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!selected || !message.trim()) return;
+    if (!selected || !message.trim() || submittingRef.current) return;
+    submittingRef.current = true;
     setSending(true);
 
     const res = await fetch(`/api/conversations/${selected.id}`, {
@@ -67,10 +69,13 @@ export default function ConversationsPage() {
       await fetchConversations();
     }
     setSending(false);
+    submittingRef.current = false;
   }
 
   async function startConversation(e: React.FormEvent) {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSending(true);
     const res = await fetch("/api/conversations", {
       method: "POST",
@@ -78,11 +83,14 @@ export default function ConversationsPage() {
       body: JSON.stringify(newForm),
     });
     if (res.ok) {
+      const data = await res.json();
       setShowNew(false);
       setNewForm({ agentId: "", contact: "", message: "" });
       await fetchConversations();
+      setSelected(data.conversation);
     }
     setSending(false);
+    submittingRef.current = false;
   }
 
   async function updateStatus(id: string, status: string) {

@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-
-export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { getSetting } from "@/lib/settings";
 
 export const AGENT_PROMPTS: Record<string, string> = {
   CUSTOMER_SUPPORT: `You are a helpful customer support agent. Answer questions clearly and concisely. 
@@ -26,12 +25,19 @@ ORDER_JSON:{"contact":"name","items":[{"name":"item","quantity":1,"price":0}],"n
 Be friendly, clear, and confirm each item before moving on.`,
 };
 
+async function getOpenAIClient() {
+  const apiKey = await getSetting("OPENAI_API_KEY");
+  if (!apiKey) throw new Error("OpenAI API key not configured. Add it in Admin → Settings → API Keys.");
+  return new OpenAI({ apiKey });
+}
+
 export async function runAgent(
   agentType: string,
   systemPrompt: string,
   messages: { role: "user" | "assistant"; content: string }[]
 ) {
-  const response = await openai.chat.completions.create({
+  const client = await getOpenAIClient();
+  const response = await client.chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt || AGENT_PROMPTS[agentType] },
