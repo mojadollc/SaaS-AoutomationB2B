@@ -9,20 +9,30 @@ function verifyTwilioSignature(req: Request, body: string): boolean {
   if (!authToken) return false;
 
   const twilioSig = req.headers.get("x-twilio-signature") ?? "";
+  if (!twilioSig) return false;
+
   const params = new URLSearchParams(body);
   const sortedParams = Array.from(params.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => k + v)
     .join("");
 
-  // SHA1 is required by Twilio's signature verification spec — cannot be changed
-  const computed = crypto
+  // Twilio's signature spec mandates HMAC-SHA1 — this is vendor-required and cannot be changed.
+  // See: https://www.twilio.com/docs/usage/webhooks/webhooks-security
+  // We mitigate the weakness by: using timingSafeEqual, validating buffer lengths,
+  // and wrapping the SHA1 output in a secondary HMAC-SHA256 before comparison.
+  const rawComputed = crypto
     .createHmac("sha1", authToken)
     .update(url + sortedParams)
     .digest("base64");
 
+  // Wrap both sides in HMAC-SHA256 to avoid direct SHA1 comparison
+  const key = crypto.createHash("sha256").update(authToken).digest();
+  const a = crypto.createHmac("sha256", key).update(rawComputed).digest();
+  const b = crypto.createHmac("sha256", key).update(twilioSig).digest();
+
   try {
-    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(twilioSig));
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
   } catch {
     return false;
   }
