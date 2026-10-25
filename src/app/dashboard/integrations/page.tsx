@@ -164,7 +164,7 @@ export default function IntegrationsPage() {
                     href={integration.docs}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-indigo-600 flex items-center gap-1 hover:underline"
+                    className="text-xs text-amber-600 flex items-center gap-1 hover:underline"
                   >
                     Docs <ExternalLink className="w-3 h-3" />
                   </a>
@@ -176,7 +176,7 @@ export default function IntegrationsPage() {
               <ol className="space-y-1.5 mb-4">
                 {integration.steps.map((step, i) => (
                   <li key={i} className="text-xs text-gray-600 flex gap-2">
-                    <span className="text-indigo-500 font-semibold shrink-0">{i + 1}.</span>
+                    <span className="text-amber-500 font-semibold shrink-0">{i + 1}.</span>
                     {step}
                   </li>
                 ))}
@@ -188,7 +188,7 @@ export default function IntegrationsPage() {
                   <select
                     value={selectedAgent}
                     onChange={(e) => setSelectedAgent(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   >
                     <option value="">Choose an agent...</option>
                     {agents.map((a) => (
@@ -196,7 +196,7 @@ export default function IntegrationsPage() {
                     ))}
                   </select>
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-                    <code className="text-xs text-indigo-700 flex-1 truncate">{widgetSnippet}</code>
+                    <code className="text-xs text-amber-700 flex-1 truncate font-mono">{widgetSnippet}</code>
                     <button onClick={() => copy(widgetSnippet, "widget")} className="shrink-0 text-gray-400 hover:text-gray-700">
                       {copied === "widget" ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                     </button>
@@ -204,7 +204,7 @@ export default function IntegrationsPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-                  <code className="text-xs text-indigo-700 flex-1 truncate">{integration.endpoint}</code>
+                  <code className="text-xs text-amber-700 flex-1 truncate font-mono">{integration.endpoint}</code>
                   <button
                     onClick={() => copy(integration.endpoint, integration.id)}
                     className="shrink-0 text-gray-400 hover:text-gray-700"
@@ -221,7 +221,7 @@ export default function IntegrationsPage() {
       {/* Outbound Webhooks */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Webhook className="w-5 h-5 text-indigo-600" />
+          <Webhook className="w-5 h-5 text-amber-600" />
           <h2 className="text-lg font-semibold text-gray-900">Outbound Webhooks</h2>
         </div>
         <p className="text-sm text-gray-500 mb-6">
@@ -242,7 +242,7 @@ export default function IntegrationsPage() {
                   required
                   type="url"
                   placeholder="https://your-system.com/webhook"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                 />
               </div>
               <div>
@@ -255,8 +255,8 @@ export default function IntegrationsPage() {
                       onClick={() => toggleEvent(event)}
                       className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                         webhookForm.events.includes(event)
-                          ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                          ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-amber-400"
                       }`}
                     >
                       {event}
