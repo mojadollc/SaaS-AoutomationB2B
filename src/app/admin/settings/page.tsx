@@ -250,13 +250,19 @@ export default function AdminSettingsPage() {
 
   async function loadApiKeys() {
     setApiLoading(true);
-    const res = await fetch("/api/admin/settings");
-    if (res.ok) {
-      const vals = await res.json();
-      setApiValues(vals);
-      const appUrl = vals["NEXTAUTH_URL"] || vals["NEXT_PUBLIC_APP_URL"] || "";
-      if (appUrl) setPmWebhookUrl(`${appUrl.replace(/\/$/, "")}/api/paymongo/webhook`);
+    const [settingsRes, envRes] = await Promise.all([
+      fetch("/api/admin/settings"),
+      fetch("/api/admin/settings/env"),
+    ]);
+    const vals = settingsRes.ok ? await settingsRes.json() : {};
+    const envVals = envRes.ok ? await envRes.json() : {};
+    const merged: Record<string, string> = {};
+    for (const key of Object.keys({ ...vals, ...envVals })) {
+      merged[key] = vals[key] || envVals[key] || "";
     }
+    setApiValues(merged);
+    const appUrl = merged["NEXTAUTH_URL"] || merged["NEXT_PUBLIC_APP_URL"] || "";
+    if (appUrl) setPmWebhookUrl(`${appUrl.replace(/\/$/, "")}/api/paymongo/webhook`);
     setApiLoading(false);
   }
 
