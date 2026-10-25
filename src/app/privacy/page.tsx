@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy – Aurex AI Automation Platform",
+  description: "Read Aurex's Privacy Policy to understand how we collect, use, and protect your personal data. We are committed to transparency and data security for all users of our AI automation platform.",
+  keywords: ["Aurex privacy policy", "AI platform data privacy", "user data protection", "GDPR compliance", "data security SaaS"],
+  robots: { index: true, follow: false },
+  alternates: { canonical: "https://aurex.io/privacy" },
+  openGraph: { url: "https://aurex.io/privacy", title: "Privacy Policy – Aurex", description: "How Aurex collects, uses, and protects your personal data." },
+};
 
 const sections = [
   {

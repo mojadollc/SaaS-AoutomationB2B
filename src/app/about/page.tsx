@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "About Aurex – AI Automation Company | Our Mission, Team & Story",
+  description: "Learn about Aurex — the AI automation platform built for Southeast Asian businesses. Meet our team, discover our mission, and see how we help 10,000+ businesses automate customer support, bookings, and lead follow-ups.",
+  keywords: ["about Aurex", "AI automation company Philippines", "AI startup Southeast Asia", "business automation team", "AI agents company"],
+  alternates: { canonical: "https://aurex.io/about" },
+  openGraph: { url: "https://aurex.io/about", title: "About Aurex – AI Automation Company", description: "Meet the team behind Aurex, the AI automation platform trusted by 10,000+ businesses in Southeast Asia." },
+};
 
 const team = [
   { name: "Marco Reyes", role: "CEO & Co-founder", bio: "Former VP of Engineering at a Fortune 500. Built AI systems for 10+ years.", emoji: "👨‍💼" },

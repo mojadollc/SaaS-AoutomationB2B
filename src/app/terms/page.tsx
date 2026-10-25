@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "Terms of Service – Aurex AI Automation Platform",
+  description: "Read Aurex's Terms of Service. Understand your rights and responsibilities when using our AI automation platform, including billing, acceptable use, and data policies.",
+  keywords: ["Aurex terms of service", "AI platform terms", "SaaS terms and conditions", "user agreement AI platform"],
+  robots: { index: true, follow: false },
+  alternates: { canonical: "https://aurex.io/terms" },
+  openGraph: { url: "https://aurex.io/terms", title: "Terms of Service – Aurex", description: "Terms and conditions for using the Aurex AI automation platform." },
+};
 
 const sections = [
   {

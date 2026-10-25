@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import LogoBar from "@/components/landing/LogoBar";
@@ -7,6 +8,13 @@ import Industries from "@/components/landing/Industries";
 import Testimonials from "@/components/landing/Testimonials";
 import Pricing from "@/components/landing/Pricing";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "Aurex – AI Automation Platform | Automate Customer Support, Bookings & Lead Follow-Up",
+  description: "Aurex deploys AI agents that handle customer support, appointment bookings, lead follow-ups, and business reports 24/7. Start free — no credit card required. Trusted by 10,000+ businesses.",
+  alternates: { canonical: "https://aurex.io" },
+  openGraph: { url: "https://aurex.io" },
+};
 
 export default function HomePage() {
   return (

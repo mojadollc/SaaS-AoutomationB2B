@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
+
+export const metadata: Metadata = {
+  title: "Careers at Aurex – Join the AI Automation Team | Remote Jobs Philippines",
+  description: "Join Aurex and help build the future of AI-powered business automation. We're hiring engineers, designers, and marketers across Southeast Asia. Remote-first, competitive pay, equity included.",
+  keywords: ["Aurex careers", "AI startup jobs Philippines", "remote jobs Southeast Asia", "AI engineer jobs Manila", "tech jobs Philippines", "SaaS company hiring"],
+  alternates: { canonical: "https://aurex.io/careers" },
+  openGraph: { url: "https://aurex.io/careers", title: "Careers at Aurex – Remote AI Jobs in Southeast Asia", description: "Join our team and build AI automation tools used by 10,000+ businesses. Remote-first, equity, competitive pay." },
+};
 
 const openRoles = [
   { title: "Senior Full-Stack Engineer", team: "Engineering", location: "Remote (PH/SEA)", type: "Full-time" },
