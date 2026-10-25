@@ -715,7 +715,7 @@ export default function AdminSettingsPage() {
                         type={secret && !revealed[key] ? "password" : "text"}
                         value={apiValues[key] ?? ""}
                         onChange={(e) => setApiValues((v) => ({ ...v, [key]: e.target.value }))}
-                        placeholder={`Enter ${label.toLowerCase().replace("secret", "value").replace("token", "value").replace("key", "value")}...`}
+                        placeholder={secret ? "••••••••••••••••" : `${label}...`}
                         className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500 font-mono"
                       />
                       {secret && (

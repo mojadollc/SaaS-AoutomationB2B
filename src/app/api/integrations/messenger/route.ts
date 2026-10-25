@@ -4,8 +4,6 @@ import { runAgent, AGENT_PROMPTS } from "@/lib/ai";
 import crypto from "crypto";
 import { getSetting } from "@/lib/settings";
 
-const ALLOWED_FB_GRAPH = "https://graph.facebook.com";
-
 // Meta webhook verification
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -93,9 +91,9 @@ export async function POST(req: Request) {
         data: { conversationId: conversation.id, role: "assistant", content: aiReply },
       });
 
-      // Send reply back via Messenger Send API — URL is hardcoded to trusted FB Graph API
+      // Send reply back via Messenger Send API
       const pageToken = await getSetting("MESSENGER_PAGE_ACCESS_TOKEN");
-      await fetch(`${ALLOWED_FB_GRAPH}/v19.0/me/messages`, {
+      await fetch("https://graph.facebook.com/v19.0/me/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
