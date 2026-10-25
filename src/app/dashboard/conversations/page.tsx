@@ -20,6 +20,50 @@ const statusColor: Record<string, "yellow" | "green" | "red"> = {
   OPEN: "yellow", RESOLVED: "green", ESCALATED: "red",
 };
 
+function FormattedMessage({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+
+  function flushList() {
+    if (listItems.length === 0) return;
+    elements.push(
+      <ul key={elements.length} className="mt-1.5 mb-1.5 space-y-1">
+        {listItems.map((item, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
+            <span>{formatInline(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    listItems = [];
+  }
+
+  function formatInline(text: string): React.ReactNode {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((p, i) =>
+      p.startsWith("**") && p.endsWith("**")
+        ? <strong key={i} className="font-semibold">{p.slice(2, -2)}</strong>
+        : p
+    );
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) { flushList(); continue; }
+    const bulletMatch = line.match(/^[-*•]\s+(.+)/);
+    if (bulletMatch) {
+      listItems.push(bulletMatch[1]);
+    } else {
+      flushList();
+      elements.push(<p key={elements.length} className={i > 0 ? "mt-1.5" : ""}>{formatInline(line)}</p>);
+    }
+  }
+  flushList();
+  return <div className="leading-relaxed">{elements}</div>;
+}
+
 export default function ConversationsPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
@@ -225,7 +269,7 @@ export default function ConversationsPage() {
                         : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
                     )}
                   >
-                    {msg.content}
+                    {msg.role === "user" ? msg.content : <FormattedMessage content={msg.content} />}
                   </div>
                 </div>
               ))}
