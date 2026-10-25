@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/Badge";
 import { PROMPT_TEMPLATES, INDUSTRIES, type PromptTemplate } from "@/lib/templates";
 
 const AGENT_TYPES = [
-  { value: "CUSTOMER_SUPPORT", label: "Customer Support", desc: "Handles FAQs and complaints" },
-  { value: "LEAD_FOLLOWUP", label: "Lead Follow-Up", desc: "Re-engages and qualifies leads" },
-  { value: "APPOINTMENT_BOOKING", label: "Appointment Booking", desc: "Books and manages appointments" },
-  { value: "REPORT_GENERATOR", label: "Report Generator", desc: "Generates business reports" },
-  { value: "ORDER_TAKING", label: "Order Taking", desc: "Takes orders conversationally" },
+  { value: "CUSTOMER_SUPPORT", label: "Customer Support" },
+  { value: "LEAD_FOLLOWUP", label: "Lead Follow-Up" },
+  { value: "APPOINTMENT_BOOKING", label: "Appointment Booking" },
+  { value: "REPORT_GENERATOR", label: "Report Generator" },
+  { value: "ORDER_TAKING", label: "Order Taking" },
 ];
 
 type Agent = {
@@ -61,13 +61,15 @@ export default function AgentsPage() {
   }
 
   function applyTemplate(template: PromptTemplate) {
-    setForm({
-      name: template.name,
-      type: template.agentType,
-      systemPrompt: template.prompt,
-    });
+    setForm({ name: template.name, type: template.agentType, systemPrompt: template.prompt });
     setShowTemplates(false);
+    setTemplateSearch("");
     setShowForm(true);
+  }
+
+  function closeTemplates() {
+    setShowTemplates(false);
+    setTemplateSearch("");
   }
 
   async function toggleAgent(id: string, isActive: boolean) {
@@ -87,25 +89,14 @@ export default function AgentsPage() {
 
   const typeLabel = (type: string) => AGENT_TYPES.find((t) => t.value === type)?.label ?? type;
 
-  const filteredTemplates = PROMPT_TEMPLATES.filter((t) => {
-    const matchesIndustry = t.industry === selectedIndustry;
-    const matchesSearch =
-      templateSearch === "" ||
-      t.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
-      t.description.toLowerCase().includes(templateSearch.toLowerCase());
-    return matchesIndustry && matchesSearch;
-  });
-
-  const searchResults = templateSearch
+  const displayedTemplates = templateSearch
     ? PROMPT_TEMPLATES.filter(
         (t) =>
           t.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
           t.description.toLowerCase().includes(templateSearch.toLowerCase()) ||
           t.industry.toLowerCase().includes(templateSearch.toLowerCase())
       )
-    : null;
-
-  const displayedTemplates = searchResults ?? filteredTemplates;
+    : PROMPT_TEMPLATES.filter((t) => t.industry === selectedIndustry);
 
   return (
     <div className="p-8">
@@ -132,13 +123,13 @@ export default function AgentsPage() {
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-indigo-500" /> Ready-Made Agent Templates
+                  <Sparkles className="w-5 h-5 text-amber-500" /> Ready-Made Agent Templates
                 </h2>
                 <p className="text-sm text-gray-500 mt-0.5">
                   {PROMPT_TEMPLATES.length} templates across {INDUSTRIES.length} industries — click any to load it instantly
                 </p>
               </div>
-              <button onClick={() => setShowTemplates(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={closeTemplates} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -151,8 +142,16 @@ export default function AgentsPage() {
                   value={templateSearch}
                   onChange={(e) => setTemplateSearch(e.target.value)}
                   placeholder="Search templates (e.g. hotel, booking, support...)"
-                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-9 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                 />
+                {templateSearch && (
+                  <button
+                    onClick={() => setTemplateSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -166,7 +165,7 @@ export default function AgentsPage() {
                       onClick={() => setSelectedIndustry(industry)}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                         selectedIndustry === industry
-                          ? "bg-indigo-50 text-indigo-700 font-semibold"
+                          ? "bg-amber-50 text-amber-700 font-semibold border-r-2 border-amber-500"
                           : "text-gray-600 hover:bg-gray-50"
                       }`}
                     >
@@ -180,7 +179,7 @@ export default function AgentsPage() {
               <div className="flex-1 overflow-y-auto p-5">
                 {templateSearch && (
                   <p className="text-xs text-gray-400 mb-4">
-                    {displayedTemplates.length} result{displayedTemplates.length !== 1 ? "s" : ""} for "{templateSearch}"
+                    {displayedTemplates.length} result{displayedTemplates.length !== 1 ? "s" : ""} for &quot;{templateSearch}&quot;
                   </p>
                 )}
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -188,13 +187,13 @@ export default function AgentsPage() {
                     <button
                       key={template.id}
                       onClick={() => applyTemplate(template)}
-                      className="text-left p-4 border border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group"
+                      className="text-left p-4 border border-gray-200 rounded-xl hover:border-amber-400 hover:bg-amber-50/50 transition-all group"
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-2xl shrink-0">{template.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold text-gray-900 text-sm group-hover:text-indigo-700">
+                            <p className="font-semibold text-gray-900 text-sm group-hover:text-amber-700">
                               {template.name}
                             </p>
                             {templateSearch && (
@@ -204,7 +203,7 @@ export default function AgentsPage() {
                             )}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{template.description}</p>
-                          <span className="inline-block mt-2 text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-medium">
+                          <span className="inline-block mt-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
                             {AGENT_TYPES.find((t) => t.value === template.agentType)?.label ?? template.agentType}
                           </span>
                         </div>
@@ -216,7 +215,7 @@ export default function AgentsPage() {
                 {displayedTemplates.length === 0 && (
                   <div className="text-center py-12 text-gray-400">
                     <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">No templates found for "{templateSearch}"</p>
+                    <p className="text-sm">No templates found for &quot;{templateSearch}&quot;</p>
                   </div>
                 )}
               </div>
@@ -234,7 +233,7 @@ export default function AgentsPage() {
               <button
                 type="button"
                 onClick={() => setShowTemplates(true)}
-                className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-800 font-medium"
               >
                 <Sparkles className="w-3.5 h-3.5" /> Browse templates
               </button>
@@ -250,7 +249,7 @@ export default function AgentsPage() {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                     placeholder="e.g. Hotel Reservations Bot"
                   />
                 </div>
@@ -259,7 +258,7 @@ export default function AgentsPage() {
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                   >
                     {AGENT_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>{t.label}</option>
@@ -273,7 +272,7 @@ export default function AgentsPage() {
                     System Prompt <span className="text-gray-400 font-normal">(optional — leave blank for default)</span>
                   </label>
                   {form.systemPrompt && (
-                    <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                    <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
                       <Sparkles className="w-3 h-3" /> Template loaded
                     </span>
                   )}
@@ -282,7 +281,7 @@ export default function AgentsPage() {
                   value={form.systemPrompt}
                   onChange={(e) => setForm({ ...form, systemPrompt: e.target.value })}
                   rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
                   placeholder="Leave blank to use the default prompt, or click 'Browse templates' to load a ready-made one..."
                 />
                 <p className="text-xs text-gray-400 mt-1">
@@ -322,8 +321,8 @@ export default function AgentsPage() {
               <CardContent className="py-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-indigo-600" />
+                    <div className="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">{agent.name}</p>
@@ -339,9 +338,9 @@ export default function AgentsPage() {
                   <p className="text-xs text-gray-500 mb-3 line-clamp-2">{agent.systemPrompt}</p>
                 )}
 
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-4">
+                <div className="flex items-center gap-1 text-xs text-gray-400 mb-4">
                   <MessageSquare className="w-3 h-3" />
-                  {agent._count.conversations} conversations
+                  {agent._count.conversations} conversation{agent._count.conversations !== 1 ? "s" : ""}
                 </div>
 
                 <div className="flex items-center gap-2">
