@@ -69,16 +69,18 @@ async function runGemini(systemPrompt: string, messages: ChatMessage[]): Promise
     generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
   };
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-  );
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+  const fetchOpts = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
 
-  const json = await res.json();
-  if (!res.ok) {
-    throw new Error(json?.error?.message ?? `Gemini error ${res.status}: ${JSON.stringify(json)}`);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 2000));
+    const res = await fetch(url, fetchOpts);
+    const json = await res.json();
+    if (res.status === 503) continue;
+    if (!res.ok) throw new Error(json?.error?.message ?? `Gemini error ${res.status}: ${JSON.stringify(json)}`);
+    return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   }
-  return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  throw new Error("Gemini is currently overloaded. Please try again in a moment.");
 }
 
 export async function runAgent(
