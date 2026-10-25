@@ -89,7 +89,7 @@ export async function GET(req: Request) {
         '</div>'
       ].join(""),
       contact ? '<div id="aurex-form"><input id="aurex-input" placeholder="Type a message..." autocomplete="off"/><button id="aurex-send" aria-label="Send"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>' : '',
-      '<div id="aurex-branding">Powered by <a href="https://aurex.payroo.xyz" target="_blank">Aurex</a></div>',
+      '<div id="aurex-branding">Powered by <a href="https://aurex.payroo.xyz" target="_blank" rel="noopener noreferrer">Aurex</a></div>',
     '</div>'
   ].join("");
   document.body.appendChild(root);

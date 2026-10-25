@@ -20,7 +20,11 @@ function verifyTwilioSignature(req: Request, body: string): boolean {
     .update(url + sortedParams)
     .digest("base64");
 
-  return computed === twilioSig;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(twilioSig));
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(req: Request) {

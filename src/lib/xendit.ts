@@ -59,7 +59,15 @@ export async function createXenditInvoice(
 
 export async function verifyXenditWebhookAsync(callbackToken: string): Promise<boolean> {
   const { XENDIT_WEBHOOK_TOKEN } = await getSettings(["XENDIT_WEBHOOK_TOKEN"]);
-  return !!XENDIT_WEBHOOK_TOKEN && callbackToken === XENDIT_WEBHOOK_TOKEN;
+  if (!XENDIT_WEBHOOK_TOKEN || !callbackToken) return false;
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(callbackToken),
+      Buffer.from(XENDIT_WEBHOOK_TOKEN)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export async function getXenditInvoice(invoiceId: string) {

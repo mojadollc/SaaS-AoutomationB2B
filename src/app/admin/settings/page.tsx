@@ -139,7 +139,7 @@ export default function AdminSettingsPage() {
 
   // PayMongo webhook manager state
   const [pmWebhooks, setPmWebhooks] = useState<any[]>([]);
-  const [pmWebhookUrl, setPmWebhookUrl] = useState("https://aurex.payroo.xyz/api/paymongo/webhook");
+  const [pmWebhookUrl, setPmWebhookUrl] = useState("");
   const [pmWebhookLoading, setPmWebhookLoading] = useState(false);
   const [pmWebhookCreating, setPmWebhookCreating] = useState(false);
   const [pmWebhookMsg, setPmWebhookMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -239,12 +239,14 @@ export default function AdminSettingsPage() {
         PAYMENT_XENDIT_ENABLED: String(updated.xendit),
       }),
     });
+    // Re-read from DB to confirm persisted state
+    const res = await fetch("/api/payments");
+    if (res.ok) setGateways(await res.json());
     setGatewaySaving(false);
   }
 
   function toggleGateway(key: keyof typeof gateways) {
     const updated = { ...gateways, [key]: !gateways[key] };
-    setGateways(updated);
     saveGateways(updated);
   }
 
@@ -569,10 +571,10 @@ export default function AdminSettingsPage() {
               <p className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Your Webhook Receiver URL</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-xs text-blue-300 font-mono bg-gray-900 px-3 py-2 rounded-lg truncate">
-                  https://aurex.payroo.xyz/api/paymongo/webhook
+                  {(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook
                 </code>
                 <button
-                  onClick={() => copyWebhookUrl("https://aurex.payroo.xyz/api/paymongo/webhook")}
+                  onClick={() => copyWebhookUrl(`${(apiValues["NEXTAUTH_URL"] || apiValues["NEXT_PUBLIC_APP_URL"] || "https://yourdomain.com").replace(/\/$/, "")}/api/paymongo/webhook`)}
                   className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors shrink-0"
                   title="Copy URL"
                 >

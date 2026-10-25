@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   }
 
   const eventType: string = event.data?.attributes?.type ?? "";
-  console.log("[PayMongo Webhook] Event:", eventType);
+  console.log("[PayMongo Webhook] Event:", eventType.replace(/[\r\n]/g, ""));
 
   // ── payment.paid ──────────────────────────────────────────────────────────
   // Fired when a direct payment is paid
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
   // ── payment.failed ────────────────────────────────────────────────────────
   if (eventType === "payment.failed" || eventType === "checkout_session.payment.failed") {
-    console.log("[PayMongo Webhook] Payment failed for event:", eventType);
+    console.log("[PayMongo Webhook] Payment failed for event:", eventType.replace(/[\r\n]/g, ""));
     // Could send a notification email here in the future
   }
 
@@ -85,5 +85,5 @@ async function upgradePlan(userId?: string, plan?: string, paymentId?: string) {
     },
   });
 
-  console.log(`[PayMongo Webhook] Upgraded user ${userId} to ${plan}`);
+  console.log(`[PayMongo Webhook] Upgraded user ${userId.replace(/[\r\n]/g, "")} to ${plan.replace(/[\r\n]/g, "")}`);
 }

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { runAgent, AGENT_PROMPTS } from "@/lib/ai";
+import crypto from "crypto";
+import { getSetting } from "@/lib/settings";
+
+const ALLOWED_FB_GRAPH = "https://graph.facebook.com";
 
 // Meta webhook verification
 export async function GET(req: Request) {
@@ -9,7 +13,15 @@ export async function GET(req: Request) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  if (mode === "subscribe" && token === process.env.MESSENGER_VERIFY_TOKEN) {
+  const verifyToken = await getSetting("MESSENGER_VERIFY_TOKEN");
+  if (!verifyToken || !token) return new Response("Forbidden", { status: 403 });
+
+  const tokensMatch = crypto.timingSafeEqual(
+    Buffer.from(token),
+    Buffer.from(verifyToken)
+  );
+
+  if (mode === "subscribe" && tokensMatch) {
     return new Response(challenge, { status: 200 });
   }
 
@@ -78,8 +90,9 @@ export async function POST(req: Request) {
         data: { conversationId: conversation.id, role: "assistant", content: aiReply },
       });
 
-      // Send reply back via Messenger Send API
-      await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${process.env.MESSENGER_PAGE_ACCESS_TOKEN}`, {
+      // Send reply back via Messenger Send API — URL is hardcoded to trusted FB Graph API
+      const pageToken = await getSetting("MESSENGER_PAGE_ACCESS_TOKEN");
+      await fetch(`${ALLOWED_FB_GRAPH}/v19.0/me/messages?access_token=${pageToken}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
