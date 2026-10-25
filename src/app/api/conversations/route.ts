@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runAgent, AGENT_PROMPTS } from "@/lib/ai";
 import { extractAndCreateOrder } from "@/lib/orders";
+import { checkConversationLimit } from "@/lib/plans";
 import { z } from "zod";
 
 const schema = z.object({
@@ -37,6 +38,10 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
   const { agentId, contact, message } = parsed.data;
+
+  const plan = (session.user as any).plan ?? "FREE";
+  const limitError = await checkConversationLimit(session.user.id, plan, prisma);
+  if (limitError) return NextResponse.json({ error: limitError }, { status: 403 });
 
   const agent = await prisma.agent.findFirst({
     where: { id: agentId, userId: session.user.id, isActive: true },
