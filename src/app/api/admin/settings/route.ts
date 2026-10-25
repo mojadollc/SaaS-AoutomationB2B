@@ -61,12 +61,12 @@ export async function POST(req: Request) {
   const body: Record<string, string> = await req.json();
 
   const ops = Object.entries(body)
-    .filter(([key]) => ALLOWED_KEYS.includes(key))
+    .filter(([key, value]) => ALLOWED_KEYS.includes(key) && value && value.trim() !== "")
     .map(([key, value]) =>
       prisma.setting.upsert({
         where: { key },
-        update: { value },
-        create: { key, value },
+        update: { value: value.trim() },
+        create: { key, value: value.trim() },
       })
     );
 

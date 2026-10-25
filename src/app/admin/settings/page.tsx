@@ -256,11 +256,12 @@ export default function AdminSettingsPage() {
       fetch("/api/admin/settings"),
       fetch("/api/admin/settings/env"),
     ]);
-    const vals = settingsRes.ok ? await settingsRes.json() : {};
-    const envVals = envRes.ok ? await envRes.json() : {};
-    const merged: Record<string, string> = {};
-    for (const key of Object.keys({ ...vals, ...envVals })) {
-      merged[key] = vals[key] || envVals[key] || "";
+    const dbVals: Record<string, string> = settingsRes.ok ? await settingsRes.json() : {};
+    const envVals: Record<string, string> = envRes.ok ? await envRes.json() : {};
+    // DB wins — env only fills keys that have no DB value at all
+    const merged: Record<string, string> = { ...envVals };
+    for (const [k, v] of Object.entries(dbVals)) {
+      if (v && v.trim() !== "") merged[k] = v;
     }
     setApiValues(merged);
     const appUrl = merged["NEXTAUTH_URL"] || merged["NEXT_PUBLIC_APP_URL"] || "";
